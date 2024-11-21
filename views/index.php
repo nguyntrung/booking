@@ -36,7 +36,7 @@
       <!-- Main Banner -->
       <div class="main-banner">
          <div class="container">
-            <img src="https://cdn.futabus.vn/futa-busline-web-cms-prod/web_ca16250b69/web_ca16250b69.png" alt="23 năm vững tin và phát triển" class="banner-image">
+            <img src="../assets/img/banner.png" alt="23 năm vững tin và phát triển" class="banner-image">
             <!-- Search Form -->
             <form action="index.php" method="GET">
                <div class="search-form">
