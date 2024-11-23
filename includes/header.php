@@ -25,7 +25,7 @@
                     <a class="nav-link fw-bold" href="#">HÓA ĐƠN</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="#">LIÊN HỆ</a>
+                    <a class="nav-link fw-bold" href="contact.php">LIÊN HỆ</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
@@ -49,3 +49,15 @@
         </div>
     </div>
 </nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function () {
+                navLinks.forEach(link => link.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+    });
+</script>
