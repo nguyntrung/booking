@@ -68,7 +68,7 @@
 </section>
 
 <!-- Connection Section -->
-<section class="connection-section">
+<!-- <section class="connection-section">
     <div class="container">
         <div class="row">
             <div class="col-md-3">
@@ -101,4 +101,4 @@
             </div>
         </div>
     </div>
-</section>
+</section> -->

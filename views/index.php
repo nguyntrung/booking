@@ -36,10 +36,13 @@
       <!-- Main Banner -->
       <div class="main-banner">
          <div class="container">
-            <img src="https://cdn.futabus.vn/futa-busline-web-cms-prod/web_ca16250b69/web_ca16250b69.png" alt="23 năm vững tin và phát triển" class="banner-image">
+            <img src="../assets/img/banner.png" alt="23 năm vững tin và phát triển" class="banner-image">
             <!-- Search Form -->
             <form action="index.php" method="GET">
                <div class="search-form">
+                  <div class="search-form__title">
+                     <h5 class="text-center pb-3 fw-bold" style="color: #00843D;">TÌM KIẾM VÉ</h5>
+                  </div>
                   <div class="search-toggle">
                      <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">

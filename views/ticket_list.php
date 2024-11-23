@@ -153,7 +153,7 @@ if ($diem_di && $diem_den && $ngay_di) {
 </style>
 
 <div class="ticket-list">
-    <div class="ticket-filters">
+    <!-- <div class="ticket-filters">
         <div class="filter-badge">
             <i class="fas fa-tag"></i>
             Giá rẻ bất ngờ
@@ -166,7 +166,9 @@ if ($diem_di && $diem_den && $ngay_di) {
             <i class="fas fa-chair"></i>
             Ghế trống
         </div>
-    </div>
+    </div> -->
+
+    <h4 class="text-center background-waring">DANH SÁCH VÉ</h4>
 
     <?php if (!empty($tickets)): ?>
         <?php foreach ($tickets as $ticket): ?>
