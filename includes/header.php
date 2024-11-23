@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
     <div class="container">
         <a class="navbar-brand" href="../views">
-            <img src="https://futabus.vn/_next/static/media/logo_new.8a0251b8.svg" alt="FUTA Bus Lines">
+            <img src="../assets/img/logo.png" alt="FUTA Bus Lines">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -25,7 +25,7 @@
                     <a class="nav-link fw-bold" href="#">HÓA ĐƠN</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="#">LIÊN HỆ</a>
+                    <a class="nav-link fw-bold" href="contact.php">LIÊN HỆ</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
@@ -49,3 +49,15 @@
         </div>
     </div>
 </nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function () {
+                navLinks.forEach(link => link.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+    });
+</script>
