@@ -36,10 +36,13 @@
       <!-- Main Banner -->
       <div class="main-banner">
          <div class="container">
-            <img src="https://cdn.futabus.vn/futa-busline-web-cms-prod/web_ca16250b69/web_ca16250b69.png" alt="23 năm vững tin và phát triển" class="banner-image">
+            <img src="../assets/img/banner.png" alt="23 năm vững tin và phát triển" class="banner-image">
             <!-- Search Form -->
             <form action="index.php" method="GET">
                <div class="search-form">
+                  <div class="search-form__title">
+                     <h5 class="text-center pb-3 fw-bold" style="color: #00843D;">TÌM KIẾM VÉ</h5>
+                  </div>
                   <div class="search-toggle">
                      <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
@@ -75,11 +78,11 @@
                      </div>
                      <div class="col-md-3">
                         <label class="form-label">Ngày đi</label>
-                        <input type="date" class="form-control" name="ngay_di">
+                        <input type="date" class="form-control" name="ngay_di" min="<?php echo date('Y-m-d'); ?>" value="<?php echo date('Y-m-d'); ?>">
                      </div>
                      <div class="col-md-3 d-none" id="return-date">
                         <label class="form-label">Ngày về</label>
-                        <input type="date" class="form-control" value="2024-10-24">
+                        <input type="date" class="form-control" name="ngay_ve" min="<?php echo date('Y-m-d'); ?>" value="<?php echo date('Y-m-d'); ?>">
                      </div>
                      <div class="col-md-3">
                         <label class="form-label">Số lượng vé</label>
@@ -87,9 +90,10 @@
                      </div>
                   </div>
                   <div class="row g-3 mt-3">
-                     <div class="col-md-12 d-flex justify-content-center">
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill">
-                        Tìm chuyến xe
+                     <!-- Adjusted to center the button using col-md-12 and a custom class -->
+                     <div class="col-12 d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary rounded-pill w-25 w-sm-75 w-md-25">
+                           Tìm chuyến xe
                         </button>
                      </div>
                   </div>
