@@ -1,35 +1,43 @@
 <?php
 session_start();
 
-// Kiểm tra xem người dùng đã đăng nhập chưa
-// if (!isset($_SESSION['MaNV'])) {
-//     header('Location: login.php');
-//     exit();
-// }
-
 // Kết nối cơ sở dữ liệu
 include '../../database/db.php';
 
-// Lấy danh sách nhân viên từ cơ sở dữ liệu, kết hợp với bảng loainhanvien
 $stmt = $conn->prepare("
     SELECT 
-        nv.MaNV, 
-        nv.TenNV, 
-        nv.NamSinh, 
-        nv.SDT, 
-        nv.MatKhau, 
-        nv.DiaChi, 
-        nv.BangCap, 
-        ln.TenLoai,
-        nv.enableflag
-    FROM nhanvien nv
-    LEFT JOIN loainhanvien ln ON nv.LoaiNV = ln.MaLoai
-    ORDER BY nv.MaNV ASC
+        hk.MaHK, 
+        hk.TenHK, 
+        hk.SDT, 
+        hk.Email, 
+        hk.MatKhau, 
+        hk.NamSinh, 
+        hk.GioiTinh, 
+        hk.CCCD, 
+        hk.enableflag
+    FROM hanhkhach hk
+    ORDER BY hk.MaHK ASC
 ");
+
+// Kiểm tra lỗi khi chuẩn bị câu lệnh SQL
+if ($stmt === false) {
+    die('Lỗi chuẩn bị câu lệnh SQL: ' . $conn->error);
+}
+
+// Thực thi truy vấn
 $stmt->execute();
+
+// Kiểm tra lỗi khi thực thi truy vấn
+if ($stmt->error) {
+    die('Lỗi khi thực thi truy vấn: ' . $stmt->error);
+}
+
+// Lấy kết quả truy vấn
 $result = $stmt->get_result();
-$nhanVienList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
+$hangKhachList = $result->fetch_all(MYSQLI_ASSOC);
 ?>
+
+
 <!doctype html>
 <html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default"
     data-assets-path="../assets/" data-template="vertical-menu-template-free" data-style="light">
@@ -38,7 +46,7 @@ $nhanVienList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
     <meta charset="utf-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Quản lý nhân viên</title>
+    <title>Quản lý hành khách</title>
     <meta name="description" content="" />
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
@@ -87,37 +95,39 @@ $nhanVienList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                     <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="card">
-                            <h5 class="card-header">Danh sách nhân viên</h5>
+                            <h5 class="card-header">Danh sách hành khách</h5>
                             <div class="card-body">
                                 <div class="table-responsive text-nowrap">
-                                    <table class="table table-bordered">
+                                <table class="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>Mã nhân viên</th>
-                                                <th>Tên nhân viên</th>
-                                                <th>Năm sinh</th>
+                                                <th>Mã hành khách</th>
+                                                <th>Tên hành khách</th>
                                                 <th>Số điện thoại</th>
-                                                <th>Bằng cấp</th>
-                                                <th>Địa chỉ</th>
-                                                <th>Chức vụ</th>
+                                                <th>Email</th> <!-- Thêm cột Email -->
+                                                <th>Mật khẩu</th>
+                                                <th>Năm sinh</th>
+                                                <th>Giới tính</th> <!-- Thêm cột Giới tính -->
+                                                <th>Số CCCD</th> <!-- Thêm cột CCCD -->
                                                 <th>Trạng thái</th> <!-- Cột trạng thái -->
                                                 <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($nhanVienList as $nhanVien): ?>
+                                            <?php foreach ($hangKhachList as $hangKhach): ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($nhanVien['MaNV']); ?></td>
-                                                <td><?php echo htmlspecialchars($nhanVien['TenNV']); ?></td>
-                                                <td><?php echo htmlspecialchars($nhanVien['NamSinh']); ?></td>
-                                                <td><?php echo htmlspecialchars($nhanVien['SDT']); ?></td>
-                                                <td><?php echo htmlspecialchars($nhanVien['BangCap']); ?></td>
-                                                <td><?php echo htmlspecialchars($nhanVien['DiaChi']); ?></td>
-                                                <td><?php echo htmlspecialchars($nhanVien['TenLoai']); ?></td>
+                                                <td><?php echo htmlspecialchars($hangKhach['MaHK']); ?></td>
+                                                <td><?php echo htmlspecialchars($hangKhach['TenHK']); ?></td>
+                                                <td><?php echo htmlspecialchars($hangKhach['SDT']); ?></td>
+                                                <td><?php echo htmlspecialchars($hangKhach['Email']); ?></td> <!-- Hiển thị Email -->
+                                                <td><?php echo htmlspecialchars($hangKhach['MatKhau']); ?></td> <!-- Hiển thị Mật khẩu -->
+                                                <td><?php echo htmlspecialchars($hangKhach['NamSinh']); ?></td>
+                                                <td><?php echo htmlspecialchars($hangKhach['GioiTinh']); ?></td> <!-- Hiển thị Giới tính -->
+                                                <td><?php echo htmlspecialchars($hangKhach['CCCD']); ?></td> <!-- Hiển thị CCCD -->
                                                 <td>
                                                     <?php 
                                                         // Kiểm tra trạng thái enableflag và hiển thị màu sắc tương ứng
-                                                        if ($nhanVien['enableflag'] == 1) {
+                                                        if ($hangKhach['enableflag'] == 1) {
                                                             echo '<span class="badge bg-danger">Vô hiệu hóa</span>';
                                                         } else {
                                                             echo '<span class="badge bg-success">Kích hoạt</span>';
@@ -132,12 +142,11 @@ $nhanVienList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                                                         </button>
                                                         <div class="dropdown-menu">
                                                             <a class="dropdown-item"
-                                                                href="add_update_user.php?id=<?php echo $nhanVien['MaNV']; ?>"><i
+                                                                href="add_update_hanhkhach.php?id=<?php echo $hangKhach['MaHK']; ?>"><i
                                                                     class="ri-pencil-line me-1"></i> Chỉnh sửa</a>
-                                                            <a class="dropdown-item" href="#" onclick="confirmDelete('nhanvien','<?php echo $nhanVien['MaNV']; ?>', <?php echo $nhanVien['enableflag']; ?>)">
+                                                            <a class="dropdown-item" href="#" onclick="confirmDelete('hanhkhach','<?php echo $hangKhach['MaHK']; ?>', <?php echo $hangKhach['enableflag']; ?>)">
                                                                 <i class="ri-delete-bin-6-line me-1"></i> Xóa
                                                             </a>
-
                                                         </div>
                                                     </div>
                                                 </td>
@@ -145,7 +154,6 @@ $nhanVienList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
-                                    <a href="add_update_user.php" class="btn btn-success mt-2">Thêm nhân viên</a>
                                 </div>
                             </div>
                         </div>
@@ -161,26 +169,26 @@ $nhanVienList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
 <script>
     function confirmDelete(table, id, isEnable) {
 
-        if (confirm('Bạn có chắc chắn muốn thay đổi trạng thái của nhân viên này không?')) {
-            // Gọi hàm để cập nhật trạng thái
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "delete.php", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+if (confirm('Bạn có chắc chắn muốn thay đổi trạng thái của nhân viên này không?')) {
+    // Gọi hàm để cập nhật trạng thái
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "delete.php", true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            // Gửi dữ liệu đến server
-            xhr.send(`type=${table}&id=${id}&enableflag=${1-isEnable}`);
+    // Gửi dữ liệu đến server
+    xhr.send(`type=${table}&id=${id}&enableflag=${1-isEnable}`);
 
-            // Xử lý phản hồi từ server
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    alert("Trạng thái nhân viên đã được thay đổi thành công!");
-                    $('.card-body').load(' .card-body>.table-responsive');
-                } else {
-                    alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
-                }
-            };
-            }
+    // Xử lý phản hồi từ server
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            alert("Trạng thái nhân viên đã được thay đổi thành công!");
+            $('.card-body').load(' .card-body>.table-responsive');
+        } else {
+            alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
+        }
+    };
     }
+}
 </script>
 
 </html>

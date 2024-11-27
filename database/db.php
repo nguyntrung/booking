@@ -1,12 +1,12 @@
 <?php
 $servername = "localhost";
 $username = "root";
-$password = "mysql";
+$password = "";
 $dbname = "datvexekhach";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = mysqli_connect($servername, $username, $password, $dbname);
 
-if ($conn->connect_error) {
-    die("Kết nối thất bại: " . $conn->connect_error);
+if (mysqli_connect_errno()) {
+    die("Kết nối thất bại: " . mysqli_connect_errno());
 }
 ?>
