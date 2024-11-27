@@ -33,15 +33,27 @@
             </a>
         </li>
         <li class="menu-item">
-            <a href="lessons_manage.php" class="menu-link">
+            <a href="hanhkhach_manager.php" class="menu-link">
                 <i class="menu-icon tf-icons ri-table-alt-line"></i>
                 <div data-i18n="Tables">Hành Khách</div>
             </a>
         </li>
         <li class="menu-item">
-            <a href="solutions_manager.php" class="menu-link">
+            <a href="user_manager.php" class="menu-link">
+                <i class="menu-icon tf-icons ri-table-alt-line"></i>
+                <div data-i18n="Tables">Nhân Viên</div>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="tuyenxe_manager.php" class="menu-link">
                 <i class="menu-icon tf-icons ri-table-alt-line"></i>
                 <div data-i18n="Tables">Tuyến Xe</div>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="thongke.php" class="menu-link">
+                <i class="menu-icon tf-icons ri-table-alt-line"></i>
+                <div data-i18n="Tables">Thống Kê Doanh Thu</div>
             </a>
         </li>
         <li class="menu-item">
