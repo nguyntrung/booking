@@ -101,7 +101,7 @@ $hangKhachList = $result->fetch_all(MYSQLI_ASSOC);
                                 <table class="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>Mã hành khách</th>
+                                                <th>Mã HK</th>
                                                 <th>Tên hành khách</th>
                                                 <th>Số điện thoại</th>
                                                 <th>Email</th> <!-- Thêm cột Email -->
