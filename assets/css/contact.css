@@ -9,7 +9,7 @@
 }
 
 .company-info a:hover {
-    color: #dc3545;
+    color: #e02f38;
 }
 
 .contact-form-header i {
@@ -22,12 +22,12 @@
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #dc3545;
+    border-color: #e02f38;
     box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
 }
 
 .btn-danger {
     padding: 0.75rem 2.5rem;
     font-weight: 500;
-    background-color: #ff3636;
+    background-color: #ff3344;
 }
