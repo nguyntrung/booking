@@ -1,11 +1,11 @@
 :root {
     --primary-color: #00843D;
-    --secondary-color: #FF4D07;
+    --secondary-color: #ff3344;
     --light-gray: #f8f9fa;
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: system-ui, -apple-system, sans-serif;
 }
 
 /* Header Styles */
@@ -198,8 +198,8 @@ body {
 }
 
 .btn-primary:hover {
-    background-color: #e64400;
-    border-color: #e64400;
+    background-color: #e02f38;
+    border-color: #e02f38;
 }
 
 /* Responsive Styles */

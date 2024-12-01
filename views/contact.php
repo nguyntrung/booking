@@ -12,7 +12,6 @@
    <body>
       <?php @include '../includes/header.php'; ?>
       <!-- Main Contact -->
-       <!-- Main Contact -->
         <div class="container py-5">
             <div class="row">
                 <!-- Left Column - Contact Information -->
@@ -82,7 +81,7 @@
                         <textarea class="form-control mb-4" name="message" rows="6" placeholder="Nhập ghi chú"></textarea>
                         
                         <div class="text-center">
-                            <button type="submit" class="btn btn-danger px-5">Gửi</button>
+                            <button type="submit" class="btn btn-danger px-5 rounded-pill">Gửi</button>
                         </div>
                     </form>
                 </div>
