@@ -46,6 +46,12 @@
     margin-bottom: 10px;
 }
 
+/* Khi loại xe là 2, sử dụng 4 cột trong lưới */
+.row-four-columns {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+
 /* Seat Styles */
 .seat {
     aspect-ratio: 1;

@@ -79,6 +79,20 @@
                     </div>
                     <button type="submit" class="submit-btn">Đăng ký</button>
                 </form>
+
+                <!-- Quên mật khẩu -->
+                <div id="forgotPasswordForm" style="display: none;">
+                    <div class="input-group">
+                        <input type="email" id="forgotEmail" placeholder="Nhập email để đặt lại mật khẩu" required>
+                        <div id="forgotEmailFeedback" class="invalid-feedback">
+                            Email không hợp lệ
+                        </div>
+                    </div>
+                    <button type="button" id="sendResetLinkBtn" class="submit-btn">Gửi liên kết đặt lại mật khẩu</button>
+                    <div id="forgotPasswordMessage" class="success-message" style="display: none;">
+                        Đã gửi liên kết đặt lại mật khẩu vào email của bạn.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -87,12 +101,11 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
 
-    <!-- Firebase Config -->
-    <script>
+    <script type="module">
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyB1tRbEekMJFb1dvq_Av1hwdp-QWvSUID8",
             authDomain: "datvexekhach-b9b29.firebaseapp.com",
@@ -105,17 +118,21 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-    </script>
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-    <!-- Main Script -->
-    <script>
+        // Email validation function
+        const validateEmail = (email) => {
+            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return emailPattern.test(email);
+        };
+
         // Toggle between login and register forms
         const navTabs = document.querySelectorAll('.nav-tab');
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
-
         navTabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -132,277 +149,115 @@
             });
         });
 
-        // Toggle password visibility
-        const togglePassword = document.querySelectorAll('.toggle-password');
-        togglePassword.forEach(span => {
-            span.addEventListener('click', () => {
-                const input = span.previousElementSibling;
-                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-                input.setAttribute('type', type);
-                span.textContent = type === 'password' ? '👁' : '🔒';
-            });
+        // Forgot password form
+        document.querySelector('.forgot-password a').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'none';
+            document.getElementById('forgotPasswordForm').style.display = 'block';
         });
 
-        // Email validation function
-        const validateEmail = (email) => {
-            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            return emailPattern.test(email);
-        };
-
-        // Password validation function
-        const validatePassword = (password) => {
-            const passwordPattern = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,}$/;
-            return passwordPattern.test(password);
-        };
-
-        // Login form validation and submission
+        // Login form submission
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('loginEmail');
             const password = document.getElementById('loginPassword');
             const emailFeedback = document.getElementById('loginEmailFeedback');
             const passwordFeedback = document.getElementById('loginPasswordFeedback');
             
-            let isValid = true;
-
-            // Validate email
             if (!validateEmail(email.value)) {
                 emailFeedback.style.display = 'block';
-                isValid = false;
             } else {
                 emailFeedback.style.display = 'none';
             }
 
-            // Validate password
             if (password.value.length < 6) {
                 passwordFeedback.style.display = 'block';
-                isValid = false;
             } else {
                 passwordFeedback.style.display = 'none';
             }
 
-            if (isValid) {
+            if (email.value && password.value.length >= 6) {
                 try {
-                    const userCredential = await auth.signInWithEmailAndPassword(email.value, password.value);
-                    const user = userCredential.user;
-                    
-                    // Store user info
-                    localStorage.setItem('userEmail', user.email);
-                    localStorage.setItem('userId', user.uid);
-                    
+                    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
                     alert('Đăng nhập thành công!');
                     window.location.href = '../index.php';
-                    
                 } catch (error) {
-                    let errorMessage = 'Đã xảy ra lỗi khi đăng nhập!';
-                    
-                    switch (error.code) {
-                        case 'auth/user-not-found':
-                            errorMessage = 'Không tìm thấy tài khoản với email này!';
-                            break;
-                        case 'auth/wrong-password':
-                            errorMessage = 'Mật khẩu không chính xác!';
-                            break;
-                        case 'auth/invalid-email':
-                            errorMessage = 'Email không hợp lệ!';
-                            break;
-                        case 'auth/user-disabled':
-                            errorMessage = 'Tài khoản này đã bị vô hiệu hóa!';
-                            break;
-                    }
-                    
-                    alert(errorMessage);
-                    console.error('Login error:', error);
+                    console.error(error);
+                    alert('Đã xảy ra lỗi khi đăng nhập!');
                 }
             }
         });
 
-        // Register form validation and submission
+        // Register form submission
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('email');
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirmPassword');
             const emailFeedback = document.getElementById('emailFeedback');
             const passwordFeedback = document.getElementById('passwordFeedback');
             const confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback');
-            
-            let isValid = true;
 
-            // Validate email
             if (!validateEmail(email.value)) {
                 emailFeedback.style.display = 'block';
-                isValid = false;
             } else {
                 emailFeedback.style.display = 'none';
             }
 
-            // Validate password
-            if (!validatePassword(password.value)) {
-                passwordFeedback.style.display = 'block';
-                isValid = false;
-            } else {
-                passwordFeedback.style.display = 'none';
-            }
-
-            // Validate password match
             if (password.value !== confirmPassword.value) {
                 confirmPasswordFeedback.style.display = 'block';
-                isValid = false;
             } else {
                 confirmPasswordFeedback.style.display = 'none';
             }
 
-            if (isValid) {
+            if (password.value.length < 6) {
+                passwordFeedback.style.display = 'block';
+            } else {
+                passwordFeedback.style.display = 'none';
+            }
+
+            if (email.value && password.value.length >= 6 && password.value === confirmPassword.value) {
                 try {
-                    // Create user
-                    const userCredential = await auth.createUserWithEmailAndPassword(email.value, password.value);
-                    const user = userCredential.user;
-                    
-                    // Create user profile
-                    const userProfile = {
-                        email: user.email,
-                        createdAt: new Date().toISOString(),
-                        role: 'user'
-                    };
-                    
-                    await firebase.database().ref('users/' + user.uid).set(userProfile);
-                    
+                    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
                     alert('Đăng ký thành công!');
-                    
-                    // Auto login after registration
-                    // localStorage.setItem('userEmail', user.email);
-                    // localStorage.setItem('userId', user.uid);
-                    
-                    window.location.href = 'login.php';
-                    
-                } catch (error) {
-                    let errorMessage = 'Đã xảy ra lỗi khi đăng ký!';
-                    
-                    switch (error.code) {
-                        case 'auth/email-already-in-use':
-                            errorMessage = 'Email này đã được sử dụng!';
-                            break;
-                        case 'auth/invalid-email':
-                            errorMessage = 'Email không hợp lệ!';
-                            break;
-                        case 'auth/operation-not-allowed':
-                            errorMessage = 'Đăng ký tài khoản tạm thời bị vô hiệu hóa!';
-                            break;
-                        case 'auth/weak-password':
-                            errorMessage = 'Mật khẩu phải chứa ít nhất 6 ký tự!';
-                            break;
-                    }
-                    
-                    alert(errorMessage);
-                    console.error('Registration error:', error);
-                }
-            }
-        });
-
-        // Auth state observer
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in
-                console.log('User is signed in:', user.email);
-                
-                // Check if user is on login page and redirect if necessary
-                if (window.location.pathname.includes('login.php')) {
                     window.location.href = '../index.php';
+                } catch (error) {
+                    console.error(error);
+                    alert('Đã xảy ra lỗi khi đăng ký!');
                 }
-            } else {
-                // User is signed out
-                console.log('User is signed out');
-                localStorage.removeItem('userEmail');
-                localStorage.removeItem('userId');
             }
         });
 
-        // Forgot password handling
-        document.querySelector('.forgot-password a').addEventListener('click', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            
-            if (!email) {
-                alert('Vui lòng nhập email của bạn để đặt lại mật khẩu!');
-                return;
+        // Reset password link
+        document.getElementById('sendResetLinkBtn').addEventListener('click', async () => {
+            const forgotEmail = document.getElementById('forgotEmail');
+            const forgotEmailFeedback = document.getElementById('forgotEmailFeedback');
+
+            if (!validateEmail(forgotEmail.value)) {
+                forgotEmailFeedback.style.display = 'block';
+            } else {
+                forgotEmailFeedback.style.display = 'none';
             }
 
-            if (!validateEmail(email)) {
-                alert('Vui lòng nhập email hợp lệ!');
-                return;
-            }
+            if (forgotEmail.value) {
+                try {
+                    await sendPasswordResetEmail(auth, forgotEmail.value);
 
-            try {
-                await auth.sendPasswordResetEmail(email);
-                alert('Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn!');
-            } catch (error) {
-                let errorMessage = 'Đã xảy ra lỗi khi gửi email đặt lại mật khẩu!';
-                
-                switch (error.code) {
-                    case 'auth/invalid-email':
-                        errorMessage = 'Email không hợp lệ!';
-                        break;
-                    case 'auth/user-not-found':
-                        errorMessage = 'Không tìm thấy tài khoản với email này!';
-                        break;
+                    document.getElementById('forgotPasswordMessage').style.display = 'block';
+
+                    setTimeout(() => {
+                        document.getElementById('forgotPasswordForm').style.display = 'none';
+                        loginForm.style.display = 'block';
+                        forgotEmail.value = '';
+                        document.getElementById('forgotPasswordMessage').style.display = 'none';
+                    }, 3000);
+                } catch (error) {
+                    console.error(error);
+                    alert('Đã xảy ra lỗi khi gửi liên kết đặt lại mật khẩu!');
                 }
-                
-                alert(errorMessage);
-                console.error('Password reset error:', error);
-            }
-        });
-
-        // Input validation on typing
-        const loginEmail = document.getElementById('loginEmail');
-        const email = document.getElementById('email');
-        const password = document.getElementById('password');
-        const confirmPassword = document.getElementById('confirmPassword');
-
-        loginEmail.addEventListener('input', () => {
-            const feedback = document.getElementById('loginEmailFeedback');
-            if (!validateEmail(loginEmail.value)) {
-                feedback.style.display = 'block';
-            } else {
-                feedback.style.display = 'none';
-            }
-        });
-
-        email.addEventListener('input', () => {
-            const feedback = document.getElementById('emailFeedback');
-            if (!validateEmail(email.value)) {
-                feedback.style.display = 'block';
-            } else {
-                feedback.style.display = 'none';
-            }
-        });
-
-        password.addEventListener('input', () => {
-            const feedback = document.getElementById('passwordFeedback');
-            if (!validatePassword(password.value)) {
-                feedback.style.display = 'block';
-            } else {
-                feedback.style.display = 'none';
-            }
-            
-            // Check confirm password match
-            const confirmFeedback = document.getElementById('confirmPasswordFeedback');
-            if (confirmPassword.value && password.value !== confirmPassword.value) {
-                confirmFeedback.style.display = 'block';
-            } else {
-                confirmFeedback.style.display = 'none';
-            }
-        });
-
-        confirmPassword.addEventListener('input', () => {
-            const feedback = document.getElementById('confirmPasswordFeedback');
-            if (password.value !== confirmPassword.value) {
-                feedback.style.display = 'block';
-            } else {
-                feedback.style.display = 'none';
             }
         });
     </script>
