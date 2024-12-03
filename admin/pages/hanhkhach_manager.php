@@ -4,6 +4,22 @@ session_start();
 // Kết nối cơ sở dữ liệu
 include '../../database/db.php';
 
+// Phan trang 1 / 1
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+if (!filter_var($page, FILTER_VALIDATE_INT)) {
+    die("Lỗi: Tham số 'page' không hợp lệ.");
+}
+$limit = 8; // Số sản phẩm mỗi trang
+$offset = ($page - 1) * $limit;
+$sql_count = "SELECT COUNT(*) AS total FROM chuyenxe";
+$stmt_count = $conn->prepare($sql_count);
+$stmt_count->execute();
+$result_count = $stmt_count->get_result();
+$row_count = $result_count->fetch_assoc();
+$totalRows = $row_count['total'];  // Lấy tổng số dòng
+$totalPages = ceil($totalRows / $limit);
+// Phan trang 1 / 1
+
 $stmt = $conn->prepare("
     SELECT 
         hk.MaHK, 
@@ -16,13 +32,18 @@ $stmt = $conn->prepare("
         hk.CCCD, 
         hk.enableflag
     FROM hanhkhach hk
-    ORDER BY hk.MaHK ASC
+    ORDER BY hk.MaHK ASC 
+    LIMIT ? OFFSET ?
 ");
 
 // Kiểm tra lỗi khi chuẩn bị câu lệnh SQL
 if ($stmt === false) {
     die('Lỗi chuẩn bị câu lệnh SQL: ' . $conn->error);
 }
+
+// Phan trang 2 / 2 CHÚ Ý Thêm LIMIT và OFFSET vào truy vấn
+$stmt->bind_param("ii", $limit, $offset); 
+// Phan trang 2 / 2
 
 // Thực thi truy vấn
 $stmt->execute();
@@ -154,6 +175,39 @@ $hangKhachList = $result->fetch_all(MYSQLI_ASSOC);
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
+                                    <!-- Phan trang 3 / 3 -->
+                                    <?php
+                                    // Hiển thị phân trang
+                                    echo '<nav aria-label="Page navigation" class="p-5 fs-3">';
+                                    echo '<ul class="pagination justify-content-center green-pagination">';
+
+                                    // Nút Previous
+                                    if ($page > 1) {
+                                        echo '<li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>';
+                                    } else {
+                                        echo '<li class="page-item disabled"><a class="page-link" href="#">&laquo; First</a></li>';
+                                    }
+
+                                    // Các nút số trang
+                                    for ($i = 1; $i <= $totalPages; $i++) {
+                                        if ($i == $page) {
+                                            echo '<li class="page-item active"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
+                                        } else {
+                                            echo '<li class="page-item"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
+                                        }
+                                    }
+
+                                    // Nút Next
+                                    if ($page < $totalPages) {
+                                        echo '<li class="page-item"><a class="page-link" href="?page=' . ($totalPages) . '">Last &raquo;</a></li>';
+                                    } else {
+                                        echo '<li class="page-item disabled"><a class="page-link" href="#">Last &raquo;</a></li>';
+                                    }
+
+                                    echo '</ul>';
+                                    echo '</nav>';
+                                    ?>
+                                    <!-- Phan trang 3 / 3 -->
                                 </div>
                             </div>
                         </div>

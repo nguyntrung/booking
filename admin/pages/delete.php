@@ -27,6 +27,9 @@ if (isset($_POST['type']) &&isset($_POST['id']) && isset($_POST['enableflag'])) 
         case 'phanhoidanhgia':
             $column = 'MaPhanHoi';
             break;
+        case 'chuyenxe':
+            $column = 'MaChuyenXe';
+            break;
         default:
             die('Error!');
     }
