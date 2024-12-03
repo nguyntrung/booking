@@ -254,6 +254,8 @@
  */
 function createSeatLayout(floorId, prefix) {
     const floor = document.getElementById(floorId);
+    
+    const rowClass = (floors === 1 && seatsPerRow === 4) ? 'row-four-columns' : 'row';
 
     // Lặp qua từng hàng
     for (let row = 0; row < rowsPerFloor; row++) {

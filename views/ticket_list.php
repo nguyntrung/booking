@@ -285,7 +285,10 @@
          </div>
          <?php endforeach; ?>
          <?php else: ?>
-         <p class="no-results">⚠️ Không tìm thấy chuyến xe nào.</p>
+            <div class="no-results-container">
+               <img class="no-results" src="https://futabus.vn/images/empty_list.svg" alt="No results">
+               <p class="no-results">Không có kết quả được tìm thấy.</p>
+            </div>
          <?php endif; ?>
       </div>
       <?php endif; ?>
