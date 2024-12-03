@@ -19,14 +19,14 @@
                     <h4 class="mb-0 text-center">TRA CỨU THÔNG TIN ĐẶT VÉ</h4>
                     </div>
                     <div class="card-body">
-                    <form>
+                    <form method="POST" action="check_ticket.php">
                         <div class="mb-3">
                         <label for="phone" class="form-label">Vui lòng nhập số điện thoại</label>
-                        <input type="text" class="form-control" id="phone" placeholder="Nhập số điện thoại">
+                        <input type="text" class="form-control" id="phone" name="SDT"placeholder="Nhập số điện thoại">
                         </div>
                         <div class="mb-3">
                         <label for="ticket-number" class="form-label">Vui lòng nhập mã vé</label>
-                        <input type="text" class="form-control" id="ticket-number" placeholder="Nhập mã vé">
+                        <input type="text" class="form-control" id="ticket-number" name="MaVeXe"placeholder="Nhập mã vé">
                         </div>
                         <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">Tra cứu</button>
