@@ -6,6 +6,20 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit97d55982009b2e1f8df862c908ea10d9
 {
+    public static $prefixLengthsPsr4 = array (
+        'P' => 
+        array (
+            'PHPMailer\\PHPMailer\\' => 20,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'PHPMailer\\PHPMailer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
+        ),
+    );
+
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'Datamatrix' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/barcodes/datamatrix.php',
@@ -27,6 +41,8 @@ class ComposerStaticInit97d55982009b2e1f8df862c908ea10d9
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
+            $loader->prefixLengthsPsr4 = ComposerStaticInit97d55982009b2e1f8df862c908ea10d9::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit97d55982009b2e1f8df862c908ea10d9::$prefixDirsPsr4;
             $loader->classMap = ComposerStaticInit97d55982009b2e1f8df862c908ea10d9::$classMap;
 
         }, null, ClassLoader::class);
