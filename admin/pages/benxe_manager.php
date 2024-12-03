@@ -10,8 +10,27 @@ session_start();
 // Kết nối cơ sở dữ liệu
 include '../../database/db.php';
 
+// Phan trang 1 / 1
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+if (!filter_var($page, FILTER_VALIDATE_INT)) {
+    die("Lỗi: Tham số 'page' không hợp lệ.");
+}
+$limit = 8; // Số sản phẩm mỗi trang
+$offset = ($page - 1) * $limit;
+$sql_count = "SELECT COUNT(*) AS total FROM benxe";
+$stmt_count = $conn->prepare($sql_count);
+$stmt_count->execute();
+$result_count = $stmt_count->get_result();
+$row_count = $result_count->fetch_assoc();
+$totalRows = $row_count['total'];  // Lấy tổng số dòng
+$totalPages = ceil($totalRows / $limit);
+// Phan trang 1 / 1
+
 // Lấy danh sách bến xe từ cơ sở dữ liệu
-$stmt = $conn->prepare("SELECT MaBenXe, TenBenXe, DiaChi FROM benxe ORDER BY MaBenXe ASC");
+$stmt = $conn->prepare("SELECT MaBenXe, TenBenXe, DiaChi FROM benxe ORDER BY MaBenXe ASC LIMIT ? OFFSET ?");
+// Phan trang 2 / 2 CHÚ Ý Thêm LIMIT và OFFSET vào truy vấn
+$stmt->bind_param("ii", $limit, $offset); 
+// Phan trang 2 / 2
 $stmt->execute();
 $result = $stmt->get_result();
 $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
@@ -100,6 +119,39 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
+                                    <!-- Phan trang 3 / 3 -->
+                                    <?php
+                                    // Hiển thị phân trang
+                                    echo '<nav aria-label="Page navigation" class="p-5 fs-3">';
+                                    echo '<ul class="pagination justify-content-center green-pagination">';
+
+                                    // Nút Previous
+                                    if ($page > 1) {
+                                        echo '<li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>';
+                                    } else {
+                                        echo '<li class="page-item disabled"><a class="page-link" href="#">&laquo; First</a></li>';
+                                    }
+
+                                    // Các nút số trang
+                                    for ($i = 1; $i <= $totalPages; $i++) {
+                                        if ($i == $page) {
+                                            echo '<li class="page-item active"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
+                                        } else {
+                                            echo '<li class="page-item"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
+                                        }
+                                    }
+
+                                    // Nút Next
+                                    if ($page < $totalPages) {
+                                        echo '<li class="page-item"><a class="page-link" href="?page=' . ($totalPages) . '">Last &raquo;</a></li>';
+                                    } else {
+                                        echo '<li class="page-item disabled"><a class="page-link" href="#">Last &raquo;</a></li>';
+                                    }
+
+                                    echo '</ul>';
+                                    echo '</nav>';
+                                    ?>
+                                    <!-- Phan trang 3 / 3 -->
                                     <a href="add_update_benxe.php" class="btn btn-success mt-2">Thêm bến xe</a>
                                 </div>
                             </div>

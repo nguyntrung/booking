@@ -1,7 +1,5 @@
 <?php
 session_start();
-
-// Kết nối cơ sở dữ liệu
 include '../../database/db.php';
 
 // Phan trang 1 / 1
@@ -20,54 +18,35 @@ $totalRows = $row_count['total'];  // Lấy tổng số dòng
 $totalPages = ceil($totalRows / $limit);
 // Phan trang 1 / 1
 
+// Lấy danh sách tuyến xe từ cơ sở dữ liệu, kết hợp với bảng benxe
 $stmt = $conn->prepare("
-    SELECT 
-        hk.MaHK, 
-        hk.TenHK, 
-        hk.SDT, 
-        hk.Email, 
-        hk.MatKhau, 
-        hk.NamSinh, 
-        hk.GioiTinh, 
-        hk.CCCD, 
-        hk.enableflag
-    FROM hanhkhach hk
-    ORDER BY hk.MaHK ASC 
+    SELECT c.MaChuyenXe, t.TenTuyenXe, c.ThoiGianKhoiHanh, c.ThoiGianKetThuc, c.GiaTien, c.SoChoTrong, 
+    x.BienSoXe, nv.TenNV, nv.SDT, l.SucChua, c.enableflag, t.MaTuyenXe
+    FROM chuyenxe c, tuyenxe t, nhanvien nv, xe x, loaixe l 
+    WHERE c.Tuyen = t.MaTuyenXe
+    and c.TaiXe = nv.MaNV
+    and c.Xe = x.MaXe
+    and x.LoaiXe = l.MaLoaiXe
+    ORDER BY t.MaTuyenXe
     LIMIT ? OFFSET ?
-");
-
-// Kiểm tra lỗi khi chuẩn bị câu lệnh SQL
-if ($stmt === false) {
-    die('Lỗi chuẩn bị câu lệnh SQL: ' . $conn->error);
-}
-
+"); 
 // Phan trang 2 / 2 CHÚ Ý Thêm LIMIT và OFFSET vào truy vấn
 $stmt->bind_param("ii", $limit, $offset); 
 // Phan trang 2 / 2
-
-// Thực thi truy vấn
 $stmt->execute();
-
-// Kiểm tra lỗi khi thực thi truy vấn
-if ($stmt->error) {
-    die('Lỗi khi thực thi truy vấn: ' . $stmt->error);
-}
-
-// Lấy kết quả truy vấn
 $result = $stmt->get_result();
-$hangKhachList = $result->fetch_all(MYSQLI_ASSOC);
+$chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
 ?>
-
 
 <!doctype html>
 <html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default"
     data-assets-path="../assets/" data-template="vertical-menu-template-free" data-style="light">
 
 <head>
-    <meta charset="utf-8" />
+<meta charset="utf-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Quản lý hành khách</title>
+    <title>Quản lý lịch trình</title>
     <meta name="description" content="" />
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
@@ -108,47 +87,47 @@ $hangKhachList = $result->fetch_all(MYSQLI_ASSOC);
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
             <?php include 'sidebar.php'; ?>
-            <!-- Layout container -->
             <div class="layout-page">
                 <?php include 'navbar.php'; ?>
-                <!-- Content wrapper -->
                 <div class="content-wrapper">
-                    <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="card">
-                            <h5 class="card-header">Danh sách hành khách</h5>
+                            <h5 class="card-header">Danh sách chuyến xe</h5>
                             <div class="card-body">
                                 <div class="table-responsive text-nowrap">
-                                <table class="table table-bordered">
+                                    <table class="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>Mã HK</th>
-                                                <th>Tên hành khách</th>
-                                                <th>Số điện thoại</th>
-                                                <th>Email</th> <!-- Thêm cột Email -->
-                                                <th>Mật khẩu</th>
-                                                <th>Năm sinh</th>
-                                                <th>Giới tính</th> <!-- Thêm cột Giới tính -->
-                                                <th>Số CCCD</th> <!-- Thêm cột CCCD -->
-                                                <th>Trạng thái</th> <!-- Cột trạng thái -->
+                                                <th>Mã chuyến xe</th>
+                                                <th>Tên tuyến xe</th>
+                                                <th>Giờ khởi hành</th>
+                                                <th>Giờ kết thúc</th>
+                                                <th>Giá tiền</th>
+                                                <th>Số chỗ trống</th>
+                                                <th>Biển số xe</th>
+                                                <th>Tên tài xế</th>
+                                                <th>SDT tài xế</th>
+                                                <th>Sức chứa</th>
+                                                <th>Trạng thái</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($hangKhachList as $hangKhach): ?>
+                                            <?php foreach ($chuyenxeList as $chuyenxe): ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($hangKhach['MaHK']); ?></td>
-                                                <td><?php echo htmlspecialchars($hangKhach['TenHK']); ?></td>
-                                                <td><?php echo htmlspecialchars($hangKhach['SDT']); ?></td>
-                                                <td><?php echo htmlspecialchars($hangKhach['Email']); ?></td> <!-- Hiển thị Email -->
-                                                <td><?php echo htmlspecialchars($hangKhach['MatKhau']); ?></td> <!-- Hiển thị Mật khẩu -->
-                                                <td><?php echo htmlspecialchars($hangKhach['NamSinh']); ?></td>
-                                                <td><?php echo htmlspecialchars($hangKhach['GioiTinh']); ?></td> <!-- Hiển thị Giới tính -->
-                                                <td><?php echo htmlspecialchars($hangKhach['CCCD']); ?></td> <!-- Hiển thị CCCD -->
+                                                <td><?php echo htmlspecialchars($chuyenxe['MaChuyenXe']); ?></td>
+                                                <td><?php echo htmlspecialchars($chuyenxe['TenTuyenXe']); ?></td>
+                                                <td><?php echo htmlspecialchars($chuyenxe['ThoiGianKhoiHanh']); ?></td>
+                                                <td><?php echo htmlspecialchars($chuyenxe['ThoiGianKetThuc']); ?></td>
+                                                <td><?php echo htmlspecialchars($chuyenxe['GiaTien']); ?></td>
+                                                <td><?php echo htmlspecialchars($chuyenxe['SoChoTrong']); ?></td>
+                                                <td><?php echo htmlspecialchars($chuyenxe['BienSoXe']); ?></td>
+                                                <td><?php echo htmlspecialchars($chuyenxe['TenNV']); ?></td>
+                                                <td><?php echo htmlspecialchars($chuyenxe['SDT']); ?></td>
+                                                <td><?php echo htmlspecialchars($chuyenxe['SucChua']); ?></td>
                                                 <td>
                                                     <?php 
-                                                        // Kiểm tra trạng thái enableflag và hiển thị màu sắc tương ứng
-                                                        if ($hangKhach['enableflag'] == 1) {
+                                                        if ($chuyenxe['enableflag'] == 1) {
                                                             echo '<span class="badge bg-danger">Vô hiệu hóa</span>';
                                                         } else {
                                                             echo '<span class="badge bg-success">Kích hoạt</span>';
@@ -163,9 +142,9 @@ $hangKhachList = $result->fetch_all(MYSQLI_ASSOC);
                                                         </button>
                                                         <div class="dropdown-menu">
                                                             <a class="dropdown-item"
-                                                                href="add_update_hanhkhach.php?id=<?php echo $hangKhach['MaHK']; ?>"><i
+                                                                href="add_update_lichtrinh.php?id=<?php echo $chuyenxe['MaChuyenXe']; ?>"><i
                                                                     class="ri-pencil-line me-1"></i> Chỉnh sửa</a>
-                                                            <a class="dropdown-item" href="#" onclick="confirmDelete('hanhkhach','<?php echo $hangKhach['MaHK']; ?>', <?php echo $hangKhach['enableflag']; ?>)">
+                                                            <a class="dropdown-item" href="#" onclick="confirmDelete('chuyenxe','<?php echo $chuyenxe['MaChuyenXe']; ?>', 1)">
                                                                 <i class="ri-delete-bin-6-line me-1"></i> Xóa
                                                             </a>
                                                         </div>
@@ -208,7 +187,8 @@ $hangKhachList = $result->fetch_all(MYSQLI_ASSOC);
                                     echo '</nav>';
                                     ?>
                                     <!-- Phan trang 3 / 3 -->
-                                </div>
+                                    <a href="./add_update_lichtrinh.php" class="btn btn-success mt-2">Thêm chuyến xe</a>
+                                    </div>
                             </div>
                         </div>
                         <?php include 'footer.php'; ?>
@@ -219,30 +199,48 @@ $hangKhachList = $result->fetch_all(MYSQLI_ASSOC);
             <div class="layout-overlay layout-menu-toggle"></div>
         </div>
         <?php include 'other.php'; ?>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 <script>
-    function confirmDelete(table, id, isEnable) {
+        function confirmDelete(table, id, isEnable) {
+            Swal.fire({
+                title: 'Bạn có chắc chắn?',
+                text: "Bạn có chắc chắn muốn xoá chuyến xe này không?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Gọi hàm để cập nhật trạng thái
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "delete.php", true);
+                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-if (confirm('Bạn có chắc chắn muốn thay đổi trạng thái của nhân viên này không?')) {
-    // Gọi hàm để cập nhật trạng thái
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "delete.php", true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    // Gửi dữ liệu đến server
+                    xhr.send(`type=${table}&id=${id}&enableflag=${isEnable}`);
 
-    // Gửi dữ liệu đến server
-    xhr.send(`type=${table}&id=${id}&enableflag=${1-isEnable}`);
-
-    // Xử lý phản hồi từ server
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            alert("Trạng thái nhân viên đã được thay đổi thành công!");
-            $('.card-body').load(' .card-body>.table-responsive');
-        } else {
-            alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
+                    // Xử lý phản hồi từ server
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            Swal.fire(
+                                'Thành công!',
+                                'Đã thay đổi trạng thái chuyến xe thành công.',
+                                'success'
+                            );
+                            $('.card-body').load(' .card-body>.table-responsive');
+                        } else {
+                            Swal.fire(
+                                'Lỗi!',
+                                'Đã có lỗi xảy ra. Vui lòng thử lại.',
+                                'error'
+                            );
+                        }
+                    };
+                }
+            });
         }
-    };
-    }
-}
-</script>
-
+    </script>
 </html>

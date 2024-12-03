@@ -4,6 +4,23 @@ session_start();
 // Kết nối cơ sở dữ liệu
 include '../../database/db.php';
 
+// Phan trang
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+if (!filter_var($page, FILTER_VALIDATE_INT)) {
+    die("Lỗi: Tham số 'page' không hợp lệ.");
+}
+$limit = 4; // Số sản phẩm mỗi trang
+$offset = ($page - 1) * $limit;
+
+$sql_count = "SELECT COUNT(*) AS total FROM phanhoidanhgia";
+$stmt_count = $conn->prepare($sql_count);
+$stmt_count->execute();
+$result_count = $stmt_count->get_result();
+$row_count = $result_count->fetch_assoc();
+$totalRows = $row_count['total'];  // Lấy tổng số dòng
+
+$totalPages = ceil($totalRows / $limit);
+
 $loc = isset($_GET['loc']) ? $_GET['loc'] : '0';
 if($loc=='1'){
     $locstr='ORDER BY ph.DanhGia';
@@ -13,13 +30,21 @@ if($loc=='1'){
     $locstr='ORDER BY ph.MaPhanHoi';
 }
 $loailoc = isset($_GET['loailoc']) ? $_GET['loailoc'] : 'xx';
-if($loailoc=='DESC'){
-    $loailoc='ASC';
-} else if($loailoc=='ASC'){
-    $loailoc='DESC';
+$change = isset($_GET["change"])? $_GET["change"] : 1;
+if($change==0){
+    if($loailoc!='DESC' && $loailoc!='ASC'){
+        $loailoc='ASC';
+    }
 } else {
-    $loailoc='ASC';
+    if($loailoc=='DESC'){
+        $loailoc='ASC';
+    } else if($loailoc=='ASC'){
+        $loailoc='DESC';
+    } else {
+        $loailoc='ASC';
+    }
 }
+
 
 $stmt = $conn->prepare("
     SELECT 
@@ -31,13 +56,16 @@ $stmt = $conn->prepare("
         ph.enableflag
     FROM phanhoidanhgia ph
     LEFT JOIN hanhkhach hk ON ph.HanhKhach = hk.MaHK
-    $locstr $loailoc
+    $locstr $loailoc 
+    LIMIT ? OFFSET ?
 ");
 
 // Kiểm tra lỗi khi chuẩn bị câu lệnh SQL
 if ($stmt === false) {
     die('Lỗi chuẩn bị câu lệnh SQL: ' . $conn->error);
 }
+
+$stmt->bind_param("ii", $limit, $offset);
 
 // Thực thi truy vấn
 $stmt->execute();
@@ -172,6 +200,37 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
+                                    <?php
+                                    // Hiển thị phân trang
+                                    echo '<nav aria-label="Page navigation" class="p-5 fs-3">';
+                                    echo '<ul class="pagination justify-content-center green-pagination">';
+
+                                    // Nút Previous
+                                    if ($page > 1) {
+                                        echo '<li class="page-item"><a class="page-link" href="?loc='.$loc.'&loailoc='.$loailoc.'&change=0&page=1">&laquo; First</a></li>';
+                                    } else {
+                                        echo '<li class="page-item disabled"><a class="page-link" href="?loc='.$loc.'&loailoc='.$loailoc.'&change=0">&laquo; First</a></li>';
+                                    }
+
+                                    // Các nút số trang
+                                    for ($i = 1; $i <= $totalPages; $i++) {
+                                        if ($i == $page) {
+                                            echo '<li class="page-item active"><a class="page-link" href="?loc='.$loc.'&loailoc='.$loailoc.'&change=0&page=' . $i . '">' . $i . '</a></li>';
+                                        } else {
+                                            echo '<li class="page-item"><a class="page-link" href="?loc='.$loc.'&loailoc='.$loailoc.'&change=0&page=' . $i . '">' . $i . '</a></li>';
+                                        }
+                                    }
+
+                                    // Nút Next
+                                    if ($page < $totalPages) {
+                                        echo '<li class="page-item"><a class="page-link" href="?loc='.$loc.'&loailoc='.$loailoc.'&change=0&page=' . ($totalPages) . '">Last &raquo;</a></li>';
+                                    } else {
+                                        echo '<li class="page-item disabled"><a class="page-link" href="?loc='.$loc.'&loailoc='.$loailoc.'&change=0">Last &raquo;</a></li>';
+                                    }
+
+                                    echo '</ul>';
+                                    echo '</nav>';
+                                    ?>
                                 </div>
                             </div>
                         </div>
