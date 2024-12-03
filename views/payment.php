@@ -164,6 +164,30 @@
          .then(data => {
              if (data.success) {
                  alert('Thanh toán thành công! Mã hóa đơn: ' + data.invoiceId);
+                 // Gửi email hóa đơn
+                  fetch('send_invoice_email.php', {
+                        method: 'POST',
+                        headers: {
+                           'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                           fullName: fullName,
+                           email: email,
+                           totalPrice: totalPrice,
+                           route: route,
+                           departureTime: departureTime,
+                           seats: seats,
+                           invoiceId: data.invoiceId
+                        })
+                  })
+                  .then(emailResponse => emailResponse.json())
+                  .then(emailData => {
+                        if (emailData.success) {
+                           alert('Hóa đơn đã được gửi qua email');
+                        } else {
+                           alert('Lỗi khi gửi email: ' + emailData.message);
+                        }
+                  });
                  window.location.href = 'payment-success.php?invoice=' + data.invoiceId;
              } else {
                  alert('Thanh toán thất bại: ' + data.message);
