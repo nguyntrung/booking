@@ -13,10 +13,10 @@
                     <a class="nav-link active fw-bold" href="../views">TRANG CHỦ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="#">LỊCH TRÌNH</a>
+                    <a class="nav-link fw-bold" href="schedule.php">LỊCH TRÌNH</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="#">TRA CỨU VÉ</a>
+                    <a class="nav-link fw-bold" href="lookup.php">TRA CỨU VÉ</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="#">TIN TỨC</a>
