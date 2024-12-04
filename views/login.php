@@ -1,14 +1,13 @@
-<!-- index.php -->
- <?php
-    include '../database/db.php'
- ?>
+<?php
+    include '../database/db.php';
+?>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FUTA Bus Lines - Chất lượng là danh dự</title>
+    <title>LAC THAN Bus Lines - Chất lượng là danh dự</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
@@ -16,6 +15,7 @@
 </head>
 <body>
     <?php @include '../includes/header.php'; ?>
+    
     <div class="container login">
         <div class="header m-0">
             <div class="brand">
@@ -37,11 +37,17 @@
                 <!-- Đăng nhập -->
                 <form id="loginForm" style="display: block;">
                     <div class="input-group">
-                        <input type="tel" placeholder="Nhập số điện thoại" required>
+                        <input type="email" id="loginEmail" placeholder="Nhập email" required>
+                        <div id="loginEmailFeedback" class="invalid-feedback">
+                            Email không hợp lệ
+                        </div>
                     </div>
                     <div class="input-group">
-                        <input class="rounded" type="password" placeholder="Nhập mật khẩu" required>
+                        <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" required>
                         <span class="toggle-password">👁</span>
+                        <div id="loginPasswordFeedback" class="invalid-feedback">
+                            Vui lòng nhập mật khẩu
+                        </div>
                     </div>
                     <div class="forgot-password">
                         <a href="#">Quên mật khẩu</a>
@@ -51,37 +57,82 @@
 
                 <!-- Đăng ký -->
                 <form id="registerForm" style="display: none;">
-                    <div class="input-group mb-2">
-                        <input class="rounded" type="tel" id="phone" placeholder="Nhập số điện thoại" required>
-                        <div id="phoneFeedback" class="invalid-feedback">
-                            Số điện thoại không hợp lệ
+                    <div class="input-group">
+                        <input type="email" id="email" placeholder="Nhập email" required>
+                        <div id="emailFeedback" class="invalid-feedback">
+                            Email không hợp lệ
                         </div>
                     </div>
-                    <div class="input-group mb-2">
-                        <input class="rounded" type="password" id="password" placeholder="Nhập mật khẩu" required>
+                    <div class="input-group">
+                        <input type="password" id="password" placeholder="Nhập mật khẩu" required>
                         <span class="toggle-password">👁</span>
                         <div id="passwordFeedback" class="invalid-feedback">
-                            Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ và số.
+                            Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ và số
                         </div>
                     </div>
-                    <div class="input-group mb-2">
-                        <input class="rounded" type="password" id="confirmPassword" placeholder="Xác nhận mật khẩu" required>
+                    <div class="input-group">
+                        <input type="password" id="confirmPassword" placeholder="Xác nhận mật khẩu" required>
                         <span class="toggle-password">👁</span>
                         <div id="confirmPasswordFeedback" class="invalid-feedback">
                             Mật khẩu không khớp
                         </div>
                     </div>
-                    <button type="submit" class="submit-btn">Tiếp tục</button>
+                    <button type="submit" class="submit-btn">Đăng ký</button>
                 </form>
+
+                <!-- Quên mật khẩu -->
+                <div id="forgotPasswordForm" style="display: none;">
+                    <div class="input-group">
+                        <input type="email" id="forgotEmail" placeholder="Nhập email để đặt lại mật khẩu" required>
+                        <div id="forgotEmailFeedback" class="invalid-feedback">
+                            Email không hợp lệ
+                        </div>
+                    </div>
+                    <button type="button" id="sendResetLinkBtn" class="submit-btn">Gửi liên kết đặt lại mật khẩu</button>
+                    <div id="forgotPasswordMessage" class="success-message" style="display: none;">
+                        Đã gửi liên kết đặt lại mật khẩu vào email của bạn.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <script>
+    <?php @include '../includes/footer.php'; ?>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+
+    <script type="module">
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB1tRbEekMJFb1dvq_Av1hwdp-QWvSUID8",
+            authDomain: "datvexekhach-b9b29.firebaseapp.com",
+            databaseURL: "https://datvexekhach-b9b29-default-rtdb.firebaseio.com",
+            projectId: "datvexekhach-b9b29",
+            storageBucket: "datvexekhach-b9b29.firebasestorage.app",
+            messagingSenderId: "1085110352840",
+            appId: "1:1085110352840:web:a0744a89b4d807cfec5efd",
+            measurementId: "G-2MPZ8B9WZJ"
+        };
+
+        // Initialize Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Email validation function
+        const validateEmail = (email) => {
+            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return emailPattern.test(email);
+        };
+
+        // Toggle between login and register forms
         const navTabs = document.querySelectorAll('.nav-tab');
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
-
         navTabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -98,74 +149,117 @@
             });
         });
 
-        const togglePassword = document.querySelectorAll('.toggle-password');
-        togglePassword.forEach(span => {
-            span.addEventListener('click', () => {
-                const input = span.previousElementSibling;
-                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-                input.setAttribute('type', type);
-            });
+        // Forgot password form
+        document.querySelector('.forgot-password a').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'none';
+            document.getElementById('forgotPasswordForm').style.display = 'block';
         });
 
-        // Validate phone number
-        const phoneInput = document.getElementById('phone');
-        phoneInput.addEventListener('input', () => {
-            const phone = phoneInput.value;
-            const phonePattern = /^[0-9]{10}$/;
-            const phoneFeedback = document.getElementById('phoneFeedback');
-            if (!phonePattern.test(phone)) {
-                phoneFeedback.style.display = 'block';
+        // Login form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail');
+            const password = document.getElementById('loginPassword');
+            const emailFeedback = document.getElementById('loginEmailFeedback');
+            const passwordFeedback = document.getElementById('loginPasswordFeedback');
+            
+            if (!validateEmail(email.value)) {
+                emailFeedback.style.display = 'block';
             } else {
-                phoneFeedback.style.display = 'none';
+                emailFeedback.style.display = 'none';
             }
-        });
 
-        // Validate password
-        const passwordInput = document.getElementById('password');
-        passwordInput.addEventListener('input', () => {
-            const password = passwordInput.value;
-            const passwordPattern = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,}$/;
-            const passwordFeedback = document.getElementById('passwordFeedback');
-            if (!passwordPattern.test(password)) {
+            if (password.value.length < 6) {
                 passwordFeedback.style.display = 'block';
             } else {
                 passwordFeedback.style.display = 'none';
             }
+
+            if (email.value && password.value.length >= 6) {
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+                    alert('Đăng nhập thành công!');
+                    window.location.href = '../index.php';
+                } catch (error) {
+                    console.error(error);
+                    alert('Đã xảy ra lỗi khi đăng nhập!');
+                }
+            }
         });
 
-        // Validate confirm password
-        const confirmPasswordInput = document.getElementById('confirmPassword');
-        confirmPasswordInput.addEventListener('input', () => {
-            const confirmPassword = confirmPasswordInput.value;
-            const password = passwordInput.value;
+        // Register form submission
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const emailFeedback = document.getElementById('emailFeedback');
+            const passwordFeedback = document.getElementById('passwordFeedback');
             const confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback');
-            if (confirmPassword !== password) {
+
+            if (!validateEmail(email.value)) {
+                emailFeedback.style.display = 'block';
+            } else {
+                emailFeedback.style.display = 'none';
+            }
+
+            if (password.value !== confirmPassword.value) {
                 confirmPasswordFeedback.style.display = 'block';
             } else {
                 confirmPasswordFeedback.style.display = 'none';
             }
+
+            if (password.value.length < 6) {
+                passwordFeedback.style.display = 'block';
+            } else {
+                passwordFeedback.style.display = 'none';
+            }
+
+            if (email.value && password.value.length >= 6 && password.value === confirmPassword.value) {
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+                    alert('Đăng ký thành công!');
+                    window.location.href = '../index.php';
+                } catch (error) {
+                    console.error(error);
+                    alert('Đã xảy ra lỗi khi đăng ký!');
+                }
+            }
         });
 
-        // Submit form
-        registerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+        // Reset password link
+        document.getElementById('sendResetLinkBtn').addEventListener('click', async () => {
+            const forgotEmail = document.getElementById('forgotEmail');
+            const forgotEmailFeedback = document.getElementById('forgotEmailFeedback');
 
-            // You can proceed with the form submission logic here if everything is valid
-            const phoneFeedback = document.getElementById('phoneFeedback').style.display;
-            const passwordFeedback = document.getElementById('passwordFeedback').style.display;
-            const confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback').style.display;
-
-            if (phoneFeedback === 'none' && passwordFeedback === 'none' && confirmPasswordFeedback === 'none') {
-                alert('Đăng ký thành công!');
+            if (!validateEmail(forgotEmail.value)) {
+                forgotEmailFeedback.style.display = 'block';
             } else {
-                alert('Vui lòng sửa lỗi và thử lại.');
+                forgotEmailFeedback.style.display = 'none';
+            }
+
+            if (forgotEmail.value) {
+                try {
+                    await sendPasswordResetEmail(auth, forgotEmail.value);
+
+                    document.getElementById('forgotPasswordMessage').style.display = 'block';
+
+                    setTimeout(() => {
+                        document.getElementById('forgotPasswordForm').style.display = 'none';
+                        loginForm.style.display = 'block';
+                        forgotEmail.value = '';
+                        document.getElementById('forgotPasswordMessage').style.display = 'none';
+                    }, 3000);
+                } catch (error) {
+                    console.error(error);
+                    alert('Đã xảy ra lỗi khi gửi liên kết đặt lại mật khẩu!');
+                }
             }
         });
     </script>
-
-    <?php @include '../includes/footer.php'; ?>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/js/script.js"></script>
 </body>
 </html>

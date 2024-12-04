@@ -4,7 +4,7 @@
    <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>FUTA Bus Lines - Chất lượng là danh dự</title>
+      <title>LacThan Bus</title>
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
       <link rel="stylesheet" href="../assets/css/style.css">
@@ -12,7 +12,6 @@
    <body>
       <?php @include '../includes/header.php'; ?>
       <!-- Main Contact -->
-       <!-- Main Contact -->
         <div class="container py-5">
             <div class="row">
                 <!-- Left Column - Contact Information -->
@@ -21,7 +20,7 @@
                     
                     <div class="mb-4">
                         <a href="#" class="text-dark text-decoration-none">
-                            <i class="fas fa-angle-right"></i> FUTA BUS LINES
+                            <i class="fas fa-angle-right"></i> LacThan Bus
                         </a>
                     </div>
                     
@@ -61,28 +60,28 @@
                         <h4 class="text-danger m-0">Gửi thông tin liên hệ đến chúng tôi</h4>
                     </div>
                     
-                    <form action="" method="POST" class="bg-body-secondary p-4 rounded">
+                    <form action="submit_contact.php" method="POST" class="bg-body-secondary p-4 rounded">
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <select class="form-select mb-3" name="service">
+                                <select class="form-select mb-3" name="DichVu">
                                     <option selected>LACTHAN BUS</option>
                                 </select>
                                 
-                                <input type="email" class="form-control" name="email" placeholder="Email" required>
+                                <input type="email" class="form-control" name="Email" placeholder="Email" required>
                             </div>
                             
                             <div class="col-md-6">
-                                <input type="text" class="form-control mb-3" name="fullname" placeholder="Họ và tên" required>
-                                <input type="tel" class="form-control" name="phone" placeholder="Điện thoại" required>
+                                <input type="text" class="form-control mb-3" name="HoTen" placeholder="Họ và tên" required>
+                                <input type="tel" class="form-control" name="SDT" placeholder="Điện thoại" pattern="\d+" title="Chỉ nhập số" required>
                             </div>
                         </div>
                         
-                        <input type="text" class="form-control mb-3" name="subject" placeholder="Nhập Tiêu đề">
+                        <input type="text" class="form-control mb-3" name="TieuDe" placeholder="Nhập tiêu đề">
                         
-                        <textarea class="form-control mb-4" name="message" rows="6" placeholder="Nhập ghi chú"></textarea>
+                        <textarea class="form-control mb-4" name="NoiDung" rows="6" placeholder="Nhập nội dung"></textarea>
                         
                         <div class="text-center">
-                            <button type="submit" class="btn btn-danger px-5">Gửi</button>
+                            <button type="submit" class="btn btn-danger px-5 rounded-pill">Gửi</button>
                         </div>
                     </form>
                 </div>
