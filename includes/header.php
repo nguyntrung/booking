@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
     <div class="container">
         <a class="navbar-brand" href="../views">
-            <img src="../assets/img/logo.png" alt="FUTA Bus Lines">
+            <img src="../assets/img/logo.png" alt="LacThan Bus">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>

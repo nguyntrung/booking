@@ -1,3 +1,4 @@
+<!--vnpay_return.php-->
 <?php
 $config = include('vnpay_config.php');
 

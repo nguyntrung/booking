@@ -18,25 +18,21 @@ include '../database/db.php';
 
     <div class="container py-5">
         <div class="col-md-8" style="margin: 0 auto;">
-            <div class="card">
-                <div class="card-header text-center">
-                    <h4 class="mb-0">TÌM KIẾM LỊCH TRÌNH</h4>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="schedule.php">
-                        <div class="mb-3">
-                            <label for="start-point" class="form-label">Nhập điểm đi</label>
-                            <input type="text" class="form-control" id="start-point" name="BenDi" placeholder="Nhập điểm đi">
-                        </div>
-                        <div class="mb-3">
-                            <label for="end-point" class="form-label">Nhập điểm đến</label>
-                            <input type="text" class="form-control" id="end-point" name="BenDen" placeholder="Nhập điểm đến">
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Tìm tuyến xe</button>
-                        </div>
-                    </form>
-                </div>
+            <div class="card-header text-center">
+                <h4 class="mb-0">TÌM KIẾM LỊCH TRÌNH</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="schedule.php">
+                    <div class="mb-3">
+                        <input type="text" class="form-control rounded-pill" id="start-point" name="BenDi" placeholder="Nhập điểm đi">
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" class="form-control rounded-pill" id="end-point" name="BenDen" placeholder="Nhập điểm đến">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary rounded-pill" style="max-width: 3q00px; margin: 0 auto">Tìm tuyến xe</button>
+                    </div>
+                </form>
             </div>
         </div>
 

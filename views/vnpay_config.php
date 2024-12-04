@@ -1,3 +1,4 @@
+<!--vnpay_config.php-->
 <?php
 return [
     'vnp_TmnCode' => 'YOUR_TMN_CODE', // Mã website
