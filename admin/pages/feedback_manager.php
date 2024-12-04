@@ -1,174 +1,209 @@
 <?php
 session_start();
-
-// Kết nối cơ sở dữ liệu
 include '../../database/db.php';
 
+function classifyFeedbackAndSaveToDB($noiDung, $maPhanHoi, $conn) {
+    // URL API
+    $url = 'http://127.0.0.1:5000/classify_feedback';
+    $payload = json_encode(['NoiDung' => $noiDung]);
+
+    // Ghi log payload
+    error_log("========== START API CALL ==========");
+    error_log("Payload: " . $payload);
+
+    // Cấu hình cURL
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_setopt($ch, CURLOPT_VERBOSE, true); // Bật chế độ debug cho cURL
+
+    // Gọi API
+    $response = curl_exec($ch);
+    $error = curl_errno($ch) ? curl_error($ch) : null;
+    $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    // Kiểm tra lỗi cURL
+    if ($error) {
+        error_log("Error: " . $error);
+        curl_close($ch);
+        return false; // Kết thúc nếu gặp lỗi
+    }
+
+    // Kiểm tra mã trạng thái HTTP
+    if ($http_status != 200) {
+        error_log("API Error: HTTP Status Code " . $http_status);
+        curl_close($ch);
+        return false; // API không trả về thành công
+    }
+
+    // Ghi log phản hồi API
+    error_log("Response: " . $response);
+
+    // Đóng cURL
+    curl_close($ch);
+
+    // Giải mã phản hồi từ API
+    $result = json_decode($response, true);
+    
+    // Kiểm tra lỗi giải mã JSON
+    if ($result === null) {
+        error_log("JSON Decode Error: " . json_last_error_msg());
+        return false;
+    }
+
+    // Lấy giá trị Sentiment từ phản hồi
+    $sentiment = $result['Type'] ?? null;
+
+    // Kiểm tra nếu không có giá trị Sentiment
+    if (!$sentiment) {
+        error_log("Error: No 'Type' in API response.");
+        return false;
+    }
+
+    // Ghi log kết quả Sentiment
+    error_log("Sentiment: " . $sentiment);
+    error_log("========== END API CALL ==========");
+
+    // Nếu có giá trị Sentiment, lưu vào cơ sở dữ liệu
+    $stmt = $conn->prepare("UPDATE danhgiaphanhoi SET Type = ? WHERE MaPhanHoi = ?");
+    
+    // Kiểm tra lỗi SQL khi chuẩn bị câu lệnh
+    if ($stmt === false) {
+        error_log("SQL Error: " . $conn->error);
+        return false;
+    }
+
+    // Gắn giá trị vào câu lệnh SQL
+    $stmt->bind_param("si", $sentiment, $maPhanHoi);
+
+    // Thực thi câu lệnh SQL
+    if ($stmt->execute()) {
+        error_log("Updated MaPhanHoi $maPhanHoi with Type: $sentiment");
+        $stmt->close();
+        return true;
+    } else {
+        error_log("SQL Execute Error: " . $stmt->error);
+        $stmt->close();
+        return false;
+    }
+}
+
 $loc = isset($_GET['loc']) ? $_GET['loc'] : '0';
-if($loc=='1'){
-    $locstr='ORDER BY ph.DanhGia';
-} else if($loc=='2'){
-    $locstr='ORDER BY ph.enableflag';
-} else {
-    $locstr='ORDER BY ph.MaPhanHoi';
-}
+$locstr = $loc == '1' ? 'ORDER BY ph.DanhGia' : ($loc == '2' ? 'ORDER BY ph.enableflag' : 'ORDER BY ph.MaPhanHoi');
+
 $loailoc = isset($_GET['loailoc']) ? $_GET['loailoc'] : 'xx';
-if($loailoc=='DESC'){
-    $loailoc='ASC';
-} else if($loailoc=='ASC'){
-    $loailoc='DESC';
-} else {
-    $loailoc='ASC';
-}
+$loailoc = ($loailoc == 'DESC') ? 'ASC' : ($loailoc == 'ASC' ? 'DESC' : 'ASC');
 
-$stmt = $conn->prepare("
-    SELECT 
-        ph.MaPhanHoi,
-        ph.NoiDung,
-        ph.DanhGia,
-        hk.TenHK AS TenHanhKhach,
-        hk.SDT AS SDT,
-        ph.enableflag
-    FROM phanhoidanhgia ph
-    LEFT JOIN hanhkhach hk ON ph.HanhKhach = hk.MaHK
-    $locstr $loailoc
-");
+$stmt = $conn->prepare("SELECT 
+    ph.MaPhanHoi,
+    ph.NoiDung,
+    ph.DanhGia,
+    ph.Type,
+    hk.TenHK AS TenHanhKhach,
+    hk.SDT AS SDT,
+    ph.enableflag
+FROM phanhoidanhgia ph
+LEFT JOIN hanhkhach hk ON ph.HanhKhach = hk.MaHK
+$locstr $loailoc");
 
-// Kiểm tra lỗi khi chuẩn bị câu lệnh SQL
 if ($stmt === false) {
     die('Lỗi chuẩn bị câu lệnh SQL: ' . $conn->error);
 }
 
-// Thực thi truy vấn
 $stmt->execute();
 
-// Kiểm tra lỗi khi thực thi truy vấn
 if ($stmt->error) {
     die('Lỗi khi thực thi truy vấn: ' . $stmt->error);
 }
 
-// Lấy kết quả truy vấn
 $result = $stmt->get_result();
 $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
 ?>
-
-
 <!doctype html>
 <html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default"
     data-assets-path="../assets/" data-template="vertical-menu-template-free" data-style="light">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <title>QL Phản hồi đánh giá</title>
     <meta name="description" content="" />
-    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap"
-        rel="stylesheet" />
     <link rel="stylesheet" href="../assets/vendor/fonts/remixicon/remixicon.css" />
-    <!-- Menu waves for no-customizer fix -->
     <link rel="stylesheet" href="../assets/vendor/libs/node-waves/node-waves.css" />
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="../assets/vendor/css/core.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="../assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="../assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="../assets/vendor/css/theme-default.css" />
     <link rel="stylesheet" href="../assets/css/demo.css" />
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-    <!-- Page CSS -->
-    <!-- Helpers -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="../assets/vendor/js/helpers.js"></script>
-    <script src="../assets/js/config.js"></script>
-    <style>
-        .badge.bg-success {
-            background-color: #28a745; /* Màu xanh lá cây */
-            color: white;
-        }
-
-        .badge.bg-danger {
-            background-color: #dc3545; /* Màu đỏ */
-            color: white;
-        }
-    </style>
 </head>
 
 <body>
-    <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
             <?php include 'sidebar.php'; ?>
-            <!-- Layout container -->
             <div class="layout-page">
                 <?php include 'navbar.php'; ?>
-                <!-- Content wrapper -->
                 <div class="content-wrapper">
-                    <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="card">
                             <h5 class="card-header">Danh sách Phản hồi đánh giá</h5>
                             <div class="card-body">
                                 <div class="table-responsive text-nowrap">
-                                <table class="table table-bordered" style="">
+                                    <table class="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>
-                                                    <form method="get" action="" class="d-flex justify-content-between">
-                                                        <span>Mã</span>
-                                                        <input type="text" class="d-none" name="loc" value="0">
-                                                        <input type="text" class="d-none" name="loailoc" value="<?php echo $loailoc ?>">
-                                                        <button class="btn badge <?php echo $loc=='0' ? 'bg-primary' : 'bg-secondary'; ?>"><i class="ri-expand-up-down-fill"></i></button>
-                                                    </form>
-                                                </th>
-                                                <th>
-                                                    <form method="get" action="" class="d-flex justify-content-between">
-                                                        <span>Đánh giá </span>
-                                                        <input type="text" class="d-none" name="loc" value="1">
-                                                        <input type="text" class="d-none" name="loailoc" value="<?php echo $loailoc ?>">
-                                                        <button class="btn badge <?php echo $loc=='1' ? 'bg-primary' : 'bg-secondary'; ?>"><i class="ri-expand-up-down-fill"></i></button>
-                                                    </form>
-                                                </th>
+                                                <th>Mã</th>
+                                                <th>Đánh giá</th>
                                                 <th>Nội dung</th>
                                                 <th>Tên hành khách</th>
-                                                <th>
-                                                    <form method="get" action="" class="d-flex justify-content-between">
-                                                        <span>Trạng thái </span>
-                                                        <input type="text" class="d-none" name="loc" value="2">
-                                                        <input type="text" class="d-none" name="loailoc" value="<?php echo $loailoc ?>">
-                                                        <button class="btn badge <?php echo $loc=='2' ? 'bg-primary' : 'bg-secondary'; ?>"><i class="ri-expand-up-down-fill"></i></button>
-                                                    </form>
-                                                </th>
+                                                <th>Trạng thái</th>
+                                                <th>Loại</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php foreach ($phanhoiList as $phanhoi): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($phanhoi['MaPhanHoi']); ?></td>
-                                                <td class="text-warning"><?php 
-                                                    $sao = htmlspecialchars($phanhoi['DanhGia']);
-                                                    for($i=0; $i<$sao; $i++){
-                                                        echo '&starf; ';
-                                                    }
-                                                ?></td>
-                                                <td><?php echo htmlspecialchars($phanhoi['NoiDung']); ?></td>
-                                                <td><?php echo htmlspecialchars($phanhoi['TenHanhKhach']); ?> <a href="#" class="text-success" onclick="callHK('<?php echo htmlspecialchars($phanhoi['SDT']); ?>')"><i class="ri-phone-fill"></i></a> </td> 
-                                                <td>
-                                                    <div class="d-flex justify-content-center">
-                                                    <?php 
-                                                        // Kiểm tra trạng thái enableflag và hiển thị màu sắc tương ứng
-                                                        if ($phanhoi['enableflag'] == 1) {
-                                                            echo "<a class='badge bg-danger' href='#' onclick=\"confirmDelete('phanhoidanhgia','{$phanhoi['MaPhanHoi']}', 0)\"> Ẩn </a>";
-                                                        } else {
-                                                            echo "<a class='badge bg-success' href='#' onclick=\"confirmDelete('phanhoidanhgia','{$phanhoi['MaPhanHoi']}', 1)\"> Kích hoạt </a>";
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($phanhoi['MaPhanHoi']); ?></td>
+                                                    <td class="text-warning">
+                                                        <?php 
+                                                        $sao = htmlspecialchars($phanhoi['DanhGia']);
+                                                        for($i=0; $i<$sao; $i++){
+                                                            echo '&starf; ';
                                                         }
-                                                    ?>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                                        ?>
+                                                    </td>
+                                                    <td><?php echo htmlspecialchars($phanhoi['NoiDung']); ?></td>
+                                                    <td><?php echo htmlspecialchars($phanhoi['TenHanhKhach']); ?> 
+                                                        <a href="#" class="text-success" onclick="callHK('<?php echo htmlspecialchars($phanhoi['SDT']); ?>')">
+                                                            <i class="ri-phone-fill"></i>
+                                                        </a> 
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex justify-content-center">
+                                                            <?php 
+                                                                if ($phanhoi['enableflag'] == 1) {
+                                                                    echo "<a class='badge bg-danger' href='#' onclick=\"confirmDelete('phanhoidanhgia','{$phanhoi['MaPhanHoi']}', 0)\">Ẩn</a>";
+                                                                } else {
+                                                                    echo "<a class='badge bg-success' href='#' onclick=\"confirmDelete('phanhoidanhgia','{$phanhoi['MaPhanHoi']}', 1)\">Kích hoạt</a>";
+                                                                }
+                                                            ?>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <?php 
+                                                        $type = $phanhoi['Type'] ?? 'Chưa phân loại';
+                                                        echo htmlspecialchars($type); 
+
+                                                        if ($type === "Tích cực") {
+                                                            echo  ' 😊'; 
+                                                        } elseif ($type === "Tiêu cực") {
+                                                            echo ' 😢'; 
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                </tr>
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
@@ -177,14 +212,11 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
                         </div>
                         <?php include 'footer.php'; ?>
                     </div>
-                    <!-- Content wrapper -->
                 </div>
             </div>
-            <div class="layout-overlay layout-menu-toggle"></div>
         </div>
         <?php include 'other.php'; ?>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    </div>
 </body>
 <script>
     function confirmDelete(table, id, isEnable) {
