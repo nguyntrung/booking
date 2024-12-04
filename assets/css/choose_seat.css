@@ -18,7 +18,7 @@
     background: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    /* box-shadow: 0 1px 3px rgba(0,0,0,0.1); */
     margin-bottom: 20px;
 }
 
@@ -54,22 +54,26 @@
 
 /* Seat Styles */
 .seat {
+    max-height: 520px;
+    width: 100%;
     aspect-ratio: 1;
-    border: 2px solid #e0e0e0;
+    border: 1px solid #e0e0e0;
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
     background: white;
-    font-size: 14px;
+    font-size: x-small;
     transition: all 0.2s;
     padding: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .seat.available {
-    border-color: #2196F3;
+    border-color: 2px solid #2196F3;
     color: #2196F3;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 .seat.selected {
