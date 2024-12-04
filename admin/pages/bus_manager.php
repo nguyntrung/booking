@@ -2,30 +2,23 @@
    session_start();
    
    // Kiểm tra xem người dùng đã đăng nhập chưa
-   if (!isset($_SESSION['MaNguoiDung'])) {
-       header('Location: login.php');
-       exit();
-   }
+   // if (!isset($_SESSION['MaNguoiDung'])) {
+   //     header('Location: login.php');
+   //     exit();
+   // }
    
    // Kết nối cơ sở dữ liệu
-   include '../../../database/db.php';
+   include '../../database/db.php';
    
-   // Lấy danh sách bài học từ cơ sở dữ liệu
-   $stmt = $conn->prepare("SELECT b.MaBaiHoc, b.TenBai, b.NoiDungLyThuyet, b.DuongDanVideo, b.ThoiLuongVideo, c.TenChuong 
-                            FROM baihoc b 
-                            JOIN chuonghoc c ON b.MaChuong = c.MaChuong 
-                            ORDER BY b.MaBaiHoc ASC");
+   // Lấy danh sách xe từ cơ sở dữ liệu
+   $stmt = $conn->prepare("SELECT x.MaXe, x.BienSoXe, x.ViTriXe, x.LoaiXe, l.TenLoaiXe, b.TenBenXe
+                            FROM xe x 
+                            JOIN loaixe l ON x.LoaiXe = l.MaLoaiXe 
+                            JOIN benxe b ON x.ViTriXe = b.MaBenXe
+                            ORDER BY x.MaXe ASC");
    $stmt->execute();
-   $baiHocList = $stmt->fetchAll();
-   
-   function formatDuration($seconds) {
-       $hours = floor($seconds / 3600); // Lấy số giờ
-       $minutes = floor(($seconds % 3600) / 60); // Lấy số phút
-       $seconds = $seconds % 60; // Lấy số giây
-   
-       // Đảm bảo rằng giờ, phút, giây luôn có 2 chữ số
-       return sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
-   }
+   $result = $stmt->get_result();
+   $XeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
    ?>
 <!doctype html>
 <html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default"
@@ -34,7 +27,7 @@
       <meta charset="utf-8" />
       <meta name="viewport"
          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-      <title>Quản lý bài học</title>
+      <title>Quản lý xe</title>
       <meta name="description" content="" />
       <!-- Favicon -->
       <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
@@ -70,54 +63,31 @@
                <!-- Content -->
                <div class="container-xxl flex-grow-1 container-p-y">
                   <div class="card">
-                     <h5 class="card-header">Danh sách các bài học</h5>
+                     <h5 class="card-header">Danh sách các xe</h5>
                      <div class="card-body">
                         <div class="table-responsive text-nowrap">
                            <table class="table table-bordered">
                               <thead>
                                  <tr>
-                                    <th>Mã</th>
-                                    <th>Chương</th>
-                                    <th>Tên bài</th>
-                                    <th>Lý thuyết</th>
-                                    <th>Đường dẫn</th>
-                                    <th>Thời Lượng Video</th>
+                                    <th>Mã xe</th>
+                                    <th>Loại xe</th>
+                                    <th>Biển số xe</th>
+                                    <th>Vị Trí Xe</th>
                                     <th></th>
                                  </tr>
                               </thead>
                               <tbody>
-                                 <?php foreach ($baiHocList as $baiHoc): ?>
+                                 <?php foreach ($XeList as $xe): ?>
                                  <tr>
-                                    <td><?php echo htmlspecialchars($baiHoc['MaBaiHoc']); ?></td>
+                                    <td><?php echo htmlspecialchars($xe['MaXe']); ?></td>
                                     <td>
-                                       <?php 
-                                          $tenChuong = htmlspecialchars($baiHoc['TenChuong']);
-                                          echo mb_substr($tenChuong, 0, 8) . (mb_strlen($tenChuong) > 8 ? '' : '');
-                                          ?>
+                                       <?php echo htmlspecialchars($xe['TenLoaiXe']); ?>
                                     </td>
                                     <td>
-                                       <?php 
-                                          $tenBai = htmlspecialchars($baiHoc['TenBai']);
-                                          echo mb_substr($tenBai, 0,30) . (mb_strlen($tenBai) > 30 ? '...' : '');
-                                          ?>
+                                       <?php echo htmlspecialchars($xe['BienSoXe']); ?>
                                     </td>
                                     <td>
-                                       <?php 
-                                          $lyThuyet = htmlspecialchars($baiHoc['NoiDungLyThuyet']);
-                                          echo mb_substr($lyThuyet, 0, 20) . (mb_strlen($lyThuyet) > 20 ? '...' : ''); 
-                                          ?>
-                                    </td>
-                                    <td>
-                                       <?php 
-                                          $duongDanVideo = htmlspecialchars($baiHoc['DuongDanVideo']);
-                                          echo mb_substr($duongDanVideo, 0, 20) . (mb_strlen($duongDanVideo) > 20 ? '...' : ''); 
-                                          ?>
-                                    </td>
-                                    <td>
-                                       <?php 
-                                          $thoiLuongVideo = htmlspecialchars($baiHoc['ThoiLuongVideo']);
-                                          echo formatDuration($thoiLuongVideo);
-                                          ?>
+                                       <?php echo htmlspecialchars($xe['TenBenXe']); ?>
                                     </td>
                                     <td>
                                        <div class="dropdown">
@@ -127,10 +97,10 @@
                                           </button>
                                           <div class="dropdown-menu">
                                              <a class="dropdown-item"
-                                                href="add_update_lessons.php?id=<?php echo $baiHoc['MaBaiHoc']; ?>"><i
+                                                href="add_update_bus.php?id=<?php echo $xe['MaXe']; ?>"><i
                                                 class="ri-pencil-line me-1"></i> Chỉnh sửa</a>
                                              <a class="dropdown-item" href="#"
-                                                onclick="confirmDelete('<?php echo $baiHoc['MaBaiHoc']; ?>')"><i
+                                                onclick="confirmDelete('<?php echo $xe['MaXe']; ?>')"><i
                                                 class="ri-delete-bin-6-line me-1"></i> Xóa</a>
                                           </div>
                                        </div>
@@ -139,7 +109,7 @@
                                  <?php endforeach; ?>
                               </tbody>
                            </table>
-                           <a href="add_update_lessons.php" class="btn btn-success mt-2">Thêm bài học</a>
+                           <a href="add_update_bus.php" class="btn btn-success mt-2">Thêm xe</a>
                         </div>
                      </div>
                   </div>

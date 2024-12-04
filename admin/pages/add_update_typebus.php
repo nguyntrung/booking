@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Kiểm tra xem người dùng đã đăng nhập chưa
+// // Kiểm tra xem người dùng đã đăng nhập chưa
 // if (!isset($_SESSION['MaNguoiDung'])) {
 //     header('Location: login.php');
 //     exit();
@@ -11,58 +11,54 @@ session_start();
 include '../../database/db.php';
 
 // Khởi tạo biến cho các trường
-$maBenXe = '';
-$tenBenXe = '';
-$diaChi = '';
+$maLoaiXe = '';
+$tenLoaiXe = '';
+$sucChua = '';
 $errorMessage = '';
 $successMessage = '';
 
-// Kiểm tra xem có mã bến để chỉnh sửa không
+// Kiểm tra xem có mã câu hỏi để chỉnh sửa không
 if (isset($_GET['id'])) {
-    $maBenXe = $_GET['id'];
+    $maLoaiXe = $_GET['id'];
 
     // Lấy thông tin bến xe từ cơ sở dữ liệu
-    $stmt = $conn->prepare("SELECT MaBenXe, TenBenXe, DiaChi FROM benxe WHERE MaBenXe = ?");
-    $stmt->bind_param("i", $maBenXe);
+    $stmt = $conn->prepare("SELECT MaLoaiXe, TenLoaiXe, SucChua FROM loaixe WHERE MaLoaiXe = ?");
+    $stmt->bind_param("i", $maLoaiXe);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result && $result->num_rows > 0) {
-        $benXe = $result->fetch_assoc();
-        $tenBenXe = $benXe['TenBenXe'];
-        $diaChi = $benXe['DiaChi'];
+        $loaiXe = $result->fetch_assoc();
+        $tenLoaiXe = $loaiXe['TenLoaiXe'];
+        $sucChua = $loaiXe['SucChua'];
     } else {
-        $errorMessage = 'Không tìm thấy bến xe!';
+        $errorMessage = 'Không tìm thấy loại xe!';
     }
 }
 
-// Xử lý thêm hoặc cập nhật bến xe
+// Xử lý thêm hoặc cập nhật câu hỏi
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $tenBenXe = trim($_POST['tenBenXe']);
-    $diaChi = trim($_POST['diaChi']);
+    $tenLoaiXe = $_POST['tenLoaiXe'];
+    $sucChua = $_POST['sucChua'];
 
-    if (empty($tenBenXe)) {
-        $errorMessage = 'Vui lòng nhập tên bến xe.';
+    if (empty($tenLoaiXe) || empty($sucChua)) {
+        $errorMessage = 'Vui lòng điền tất cả các trường.';
     } else {
-        if ($maBenXe) {
-            // Cập nhật bến xe
-            $stmt = $conn->prepare("UPDATE benxe SET TenBenXe = ?, DiaChi = ? WHERE MaBenXe = ?");
-            $stmt->bind_param("ssi", $tenBenXe, $diaChi, $maBenXe);
-
-            if ($stmt->execute()) {
-                $successMessage = 'Cập nhật bến xe thành công!';
+        if ($maLoaiXe) {
+            // Cập nhật câu hỏi
+            $stmt = $conn->prepare("UPDATE loaixe SET TenLoaiXe = ?, SucChua = ? WHERE MaLoaiXe = ?");
+            if ($stmt->execute([$tenLoaiXe, $sucChua, $maCLoaiXe])) {
+                $successMessage = 'Cập nhật loại xe thành công!';
             } else {
-                $errorMessage = 'Có lỗi xảy ra khi cập nhật bến xe.';
+                $errorMessage = 'Có lỗi xảy ra khi cập nhật loại xe!';
             }
         } else {
-            // Thêm bến xe mới
-            $stmt = $conn->prepare("INSERT INTO benxe (TenBenXe, DiaChi) VALUES (?, ?)");
-            $stmt->bind_param("ss", $tenBenXe, $diaChi);
-
-            if ($stmt->execute()) {
-                $successMessage = 'Thêm bến xe thành công!';
+            // Thêm câu hỏi mới
+            $stmt = $conn->prepare("INSERT INTO loaixe (TenLoaiXe, SucChua) VALUES (?, ?)");
+            if ($stmt->execute([$tenLoaiXe, $sucChua])) {
+                $successMessage = 'Thêm loại xe thành công!';
             } else {
-                $errorMessage = 'Có lỗi xảy ra khi thêm bến xe.';
+                $errorMessage = 'Có lỗi xảy ra khi thêm loại xe!';
             }
         }
     }
@@ -77,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="utf-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Quản lý bến xe</title>
+    <title>Quản lý loại xe</title>
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -102,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="card">
-                            <h5 class="card-header"><?php echo $maBenXe ? 'Chỉnh sửa bến xe' : 'Thêm bến xe'; ?></h5>
+                            <h5 class="card-header"><?php echo $maLoaiXe ? 'Chỉnh sửa loại xe' : 'Thêm loại xe'; ?></h5>
                             <div class="card-body">
                                 <?php if ($errorMessage): ?>
                                 <div class="alert alert-danger"><?php echo $errorMessage; ?></div>
@@ -112,18 +108,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <?php endif; ?>
                                 <form method="POST">
                                     <div class="mb-3">
-                                        <label for="tenBenXe" class="form-label">Tên bến xe</label>
-                                        <input type="text" class="form-control" id="tenBenXe" name="tenBenXe"
-                                            value="<?php echo htmlspecialchars($tenBenXe); ?>" required>
+                                        <label for="tenLoaiXe" class="form-label">Tên Loại Xe</label>
+                                        <input type="text" class="form-control" id="tenLoaiXe" name="tenLoaiXe"
+                                            value="<?php echo htmlspecialchars($tenLoaiXe); ?>" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="diaChi" class="form-label">Địa chỉ</label>
-                                        <input type="text" class="form-control" id="diaChi" name="diaChi"
-                                            value="<?php echo htmlspecialchars($diaChi); ?>" required>
+                                        <label for="sucChua" class="form-label">Sức Chứa</label>
+                                        <input type="text" class="form-control" id="sucChua" name="sucChua"
+                                            value="<?php echo htmlspecialchars($sucChua); ?>" required>
                                     </div>
-                                    <button type="submit"
-                                        class="btn btn-primary"><?php echo $maBenXe ? 'Cập nhật' : 'Thêm mới'; ?></button>
-                                    <a href="benxe_manager.php" class="btn btn-secondary">Quay lại</a>
+                                    <button type="submit" class="btn btn-primary"><?php echo $maLoaiXe ? 'Cập nhật' : 'Thêm mới'; ?></button>
+                                    <a href="typebus_manager.php" class="btn btn-secondary">Quay lại</a>
                                 </form>
                             </div>
                         </div>

@@ -88,7 +88,7 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
                                                         </button>
                                                         <div class="dropdown-menu">
                                                             <a class="dropdown-item"
-                                                                href="add_update_benxe.php?id=<?php echo $benXe['MaBenXe']; ?>"><i
+                                                                href="add_update_station.php?id=<?php echo $benXe['MaBenXe']; ?>"><i
                                                                     class="ri-pencil-line me-1"></i> Chỉnh sửa</a>
                                                             <a class="dropdown-item" href="#"
                                                                 onclick="confirmDelete('<?php echo $benXe['MaBenXe']; ?>')"><i
@@ -100,7 +100,7 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
-                                    <a href="add_update_benxe.php" class="btn btn-success mt-2">Thêm bến xe</a>
+                                    <a href="add_update_station.php" class="btn btn-success mt-2">Thêm bến xe</a>
                                 </div>
                             </div>
                         </div>

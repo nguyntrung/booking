@@ -2,21 +2,21 @@
 session_start();
 
 // Kiểm tra xem người dùng đã đăng nhập chưa
-if (!isset($_SESSION['MaNguoiDung'])) {
-    header('Location: login.php');
-    exit();
-}
+// if (!isset($_SESSION['MaNguoiDung'])) {
+//     header('Location: login.php');
+//     exit();
+// }
 
 // Kết nối cơ sở dữ liệu
-include '../../../database/db.php';
+include '../../database/db.php';
 
 // Lấy danh sách câu hỏi tự luận từ cơ sở dữ liệu
-$stmt = $conn->prepare("SELECT cl.MaCauHoi, cl.NoiDung, cl.LoiGiai, cl.GiaiThich, bh.TenBai 
-                         FROM cauhoituluan cl 
-                         JOIN baihoc bh ON cl.MaBaiHoc = bh.MaBaiHoc 
-                         ORDER BY cl.MaCauHoi ASC");
+$stmt = $conn->prepare("SELECT MaLoaiXe, TenLoaiXe, SucChua
+                         FROM loaixe  
+                         ORDER BY MaLoaiXe ASC");
 $stmt->execute();
-$cauHoiList = $stmt->fetchAll();
+$result = $stmt->get_result();
+$loaiXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
 ?>
 
 <!doctype html>
@@ -27,7 +27,7 @@ $cauHoiList = $stmt->fetchAll();
     <meta charset="utf-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Quản lý câu hỏi tự luận</title>
+    <title>Quản lý loại xe</title>
     <meta name="description" content="" />
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
@@ -64,38 +64,24 @@ $cauHoiList = $stmt->fetchAll();
                     <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="card">
-                            <h5 class="card-header">Danh sách câu hỏi tự luận</h5>
+                            <h5 class="card-header">Danh sách các loại xe</h5>
                             <div class="card-body">
                                 <div class="table-responsive text-nowrap">
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>Mã</th>
-                                                <th>Tên bài</th>
-                                                <th>Nội dung câu hỏi</th>
-                                                <th>Lời giải câu hỏi</th>
-                                                <th>Giải thích</th>
+                                                <th>Mã loại xe</th>
+                                                <th>Tên loại</th>
+                                                <th>Sức chứa</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($cauHoiList as $cauHoi): ?>
+                                            <?php foreach ($loaiXeList as $loaiXe): ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($cauHoi['MaCauHoi']); ?></td>
-                                                <td>
-                                                    <?php 
-                                                    $tenBai = htmlspecialchars($cauHoi['TenBai']); 
-                                                    echo mb_substr($tenBai, 0, 20) . (mb_strlen($tenBai) > 20 ? '...' : '');
-                                                    ?>
-                                                </td>
-                                                <td>
-                                                    <?php 
-                                                    $noiDung = htmlspecialchars($cauHoi['NoiDung']); 
-                                                    echo mb_substr($noiDung, 0, 40) . (mb_strlen($noiDung) > 20 ? '...' : '');
-                                                    ?>
-                                                </td>
-                                                <td><?php echo htmlspecialchars($cauHoi['LoiGiai']); ?></td>
-                                                <td><?php echo htmlspecialchars($cauHoi['GiaiThich']); ?></td>
+                                                <td><?php echo htmlspecialchars($loaiXe['MaLoaiXe']); ?></td>
+                                                <td><?php echo htmlspecialchars($loaiXe['TenLoaiXe']); ?></td>
+                                                <td><?php echo htmlspecialchars($loaiXe['SucChua']); ?></td>
                                                 <td>
                                                     <div class="dropdown">
                                                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
@@ -104,10 +90,10 @@ $cauHoiList = $stmt->fetchAll();
                                                         </button>
                                                         <div class="dropdown-menu">
                                                             <a class="dropdown-item"
-                                                                href="add_update_essay.php?id=<?php echo $cauHoi['MaCauHoi']; ?>"><i
+                                                                href="add_update_typebus.php?id=<?php echo $loaiXe['MaLoaiXe']; ?>"><i
                                                                     class="ri-pencil-line me-1"></i> Chỉnh sửa</a>
                                                             <a class="dropdown-item" href="#"
-                                                                onclick="confirmDelete('<?php echo $cauHoi['MaCauHoi']; ?>')"><i
+                                                                onclick="confirmDelete('<?php echo $loaiXe['MaLoaiXe']; ?>')"><i
                                                                     class="ri-delete-bin-6-line me-1"></i> Xóa</a>
                                                         </div>
                                                     </div>
@@ -116,7 +102,7 @@ $cauHoiList = $stmt->fetchAll();
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
-                                    <a href="add_update_essay.php" class="btn btn-success mt-2">Thêm câu hỏi</a>
+                                    <a href="add_update_typebus.php" class="btn btn-success mt-2">Thêm loại xe</a>
                                 </div>
                             </div>
                         </div>
