@@ -170,8 +170,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <?php endif; ?>
                                 <form method="POST">
                                     <div class="mb-3">
-                                        <label for="Tuyen" class="form-label">Tuyến</label>
-                                        <select class="form-control" id="Tuyen" name="Tuyen" required <?php echo $MaChuyenXe ? 'disabled' : ''; ?> >
+                                    
+                                    <?php echo $MaChuyenXe ? '<label for="Tuyen" class="form-label">Tuyến</label>' : ''; ?>
+                                    <?php echo $MaChuyenXe ? '<input type="text" class="form-control d-none" id="Tuyen" name="Tuyen" value="'.$Tuyen.'" >' : ''; ?>
+                                        <select class="form-control"  name="Tuyen" required <?php echo $MaChuyenXe ? 'disabled' : 'id="Tuyen"'; ?> >
                                             <?php foreach ($tuyenxeList as $tuyenxe): ?>
                                                 <option value="<?php echo $tuyenxe['MaTuyenXe']; ?>" <?php echo $Tuyen == $tuyenxe['MaTuyenXe'] ? 'selected' : ''; ?>>
                                                     <?php echo $tuyenxe['TenTuyenXe']; ?>
@@ -206,13 +208,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     </div>
                                     <div class="mb-3 <?php echo $MaChuyenXe ? '' : 'd-none'; ?> ">
                                         <label for="SoChoTrong" class="form-label">Số chỗ trống</label>
-                                        <input type="text" class="form-control" id="SoChoTrong" name="SoChoTrong" value="<?php echo htmlspecialchars($SoChoTrong); ?>">
+                                        <input type="text" class="form-control" id="SoChoTrong" name="SoChoTrong" value="<?php echo htmlspecialchars($SoChoTrong); ?>" readonly>
                                     </div>
                                     <div class="mb-3">
                                         <label for="TaiXe" class="form-label">Tài Tế</label>
                                         <select class="form-control" id="TaiXe" name="TaiXe" required>
-                                            <?php foreach ($nhanvienList as $nv): ?>
-                                                <option value="<?php echo $nv['MaNV']; ?>" <?php echo $TaiXe == $nv['MaNV'] ? 'selected' : ''; ?>>
+                                        <?php foreach ($nhanvienList as $nv): ?>
+                                                <option value="<?php echo $nv['MaNV']; ?>" <?php echo $Xe == $nv['NaNV'] ? 'selected' : ''; ?>>
                                                     <?php echo $nv['TenNV']; ?>
                                                 </option>
                                             <?php endforeach; ?>
@@ -268,6 +270,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     });
 </script>
+<script>
+    function fetchAvailableDrivers() {
+        const startTime = document.getElementById('ThoiGianKhoiHanh').value;
+        const endTime = document.getElementById('ThoiGianKetThuc').value;
+
+        if (startTime && endTime) {
+            fetch('lichtrinh_getTaiXe.php?startTime=' + startTime + '&endTime=' + endTime)
+                .then(response => response.json())
+                .then(data => {
+                    const driverSelect = document.getElementById('TaiXe');
+                    driverSelect.innerHTML = ''; // Xóa các lựa chọn cũ
+
+                    data.forEach(driver => {
+                        const option = document.createElement('option');
+                        option.value = driver.MaNV;
+                        option.textContent = driver.TenNV;
+                        driverSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching drivers:', error));
+        }
+    }
+
+    document.getElementById('ThoiGianKhoiHanh').addEventListener('change', fetchAvailableDrivers);
+    document.getElementById('ThoiGianKetThuc').addEventListener('change', fetchAvailableDrivers);
+</script>
+
 
 </body>
 

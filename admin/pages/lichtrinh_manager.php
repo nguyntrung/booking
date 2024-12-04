@@ -21,14 +21,15 @@ $totalPages = ceil($totalRows / $limit);
 // Lấy danh sách tuyến xe từ cơ sở dữ liệu, kết hợp với bảng benxe
 $stmt = $conn->prepare("
     SELECT c.MaChuyenXe, t.TenTuyenXe, c.ThoiGianKhoiHanh, c.ThoiGianKetThuc, c.GiaTien, c.SoChoTrong, 
-    x.BienSoXe, nv.TenNV, nv.SDT, l.SucChua, c.enableflag, t.MaTuyenXe
-    FROM chuyenxe c, tuyenxe t, nhanvien nv, xe x, loaixe l 
-    WHERE c.Tuyen = t.MaTuyenXe
-    and c.TaiXe = nv.MaNV
-    and c.Xe = x.MaXe
-    and x.LoaiXe = l.MaLoaiXe
-    ORDER BY t.MaTuyenXe
+        x.BienSoXe, nv.TenNV, nv.SDT, l.SucChua, c.enableflag, t.MaTuyenXe
+    FROM chuyenxe c
+    LEFT JOIN tuyenxe t ON c.Tuyen = t.MaTuyenXe
+    LEFT JOIN nhanvien nv ON c.TaiXe = nv.MaNV
+    LEFT JOIN xe x ON c.Xe = x.MaXe
+    LEFT JOIN loaixe l ON x.LoaiXe = l.MaLoaiXe
+    ORDER BY c.MaChuyenXe DESC
     LIMIT ? OFFSET ?
+
 "); 
 // Phan trang 2 / 2 CHÚ Ý Thêm LIMIT và OFFSET vào truy vấn
 $stmt->bind_param("ii", $limit, $offset); 
@@ -91,6 +92,7 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                 <?php include 'navbar.php'; ?>
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
+                    <a href="./lichtrinh_add1.php" class="btn btn-success mb-3">Thêm chuyến xe</a>
                         <div class="card">
                             <h5 class="card-header">Danh sách chuyến xe</h5>
                             <div class="card-body">
@@ -142,8 +144,8 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                                                         </button>
                                                         <div class="dropdown-menu">
                                                             <a class="dropdown-item"
-                                                                href="add_update_lichtrinh.php?id=<?php echo $chuyenxe['MaChuyenXe']; ?>"><i
-                                                                    class="ri-pencil-line me-1"></i> Chỉnh sửa</a>
+                                                                href="./lichtrinh_update1.php?id=<?php echo $chuyenxe['MaChuyenXe']; ?>">
+                                                                <i class="ri-pencil-line me-1"></i> Chỉnh sửa</a>
                                                             <a class="dropdown-item" href="#" onclick="confirmDelete('chuyenxe','<?php echo $chuyenxe['MaChuyenXe']; ?>', 1)">
                                                                 <i class="ri-delete-bin-6-line me-1"></i> Xóa
                                                             </a>
@@ -154,17 +156,22 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
-                                    <!-- Phan trang 3 / 3 -->
-                                    <?php
+                                    
+                                    
+                                    </div>
+                            </div>
+                        </div>
+                        <!-- Phan trang 3 / 3 -->
+                        <?php
                                     // Hiển thị phân trang
                                     echo '<nav aria-label="Page navigation" class="p-5 fs-3">';
                                     echo '<ul class="pagination justify-content-center green-pagination">';
 
                                     // Nút Previous
                                     if ($page > 1) {
-                                        echo '<li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>';
+                                        echo '<li class="page-item"><a class="page-link" href="?page=1">&laquo;</a></li>';
                                     } else {
-                                        echo '<li class="page-item disabled"><a class="page-link" href="#">&laquo; First</a></li>';
+                                        echo '<li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>';
                                     }
 
                                     // Các nút số trang
@@ -178,23 +185,20 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
 
                                     // Nút Next
                                     if ($page < $totalPages) {
-                                        echo '<li class="page-item"><a class="page-link" href="?page=' . ($totalPages) . '">Last &raquo;</a></li>';
+                                        echo '<li class="page-item"><a class="page-link" href="?page=' . ($totalPages) . '">&raquo;</a></li>';
                                     } else {
-                                        echo '<li class="page-item disabled"><a class="page-link" href="#">Last &raquo;</a></li>';
+                                        echo '<li class="page-item disabled"><a class="page-link" href="#">&raquo;</a></li>';
                                     }
 
                                     echo '</ul>';
                                     echo '</nav>';
                                     ?>
                                     <!-- Phan trang 3 / 3 -->
-                                    <a href="./add_update_lichtrinh.php" class="btn btn-success mt-2">Thêm chuyến xe</a>
-                                    </div>
-                            </div>
-                        </div>
-                        <?php include 'footer.php'; ?>
+                        
                     </div>
                     <!-- Content wrapper -->
                 </div>
+
             </div>
             <div class="layout-overlay layout-menu-toggle"></div>
         </div>
