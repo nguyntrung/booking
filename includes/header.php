@@ -13,10 +13,10 @@
                     <a class="nav-link active fw-bold" href="../views">TRANG CHỦ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="#">LỊCH TRÌNH</a>
+                    <a class="nav-link fw-bold" href="schedule.php">LỊCH TRÌNH</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="#">TRA CỨU VÉ</a>
+                    <a class="nav-link fw-bold" href="lookup.php">TRA CỨU VÉ</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="#">TIN TỨC</a>
@@ -39,7 +39,7 @@
                         </a>    
                     <?php else: ?>
                         <!-- Nếu chưa đăng nhập, hiển thị nút đăng nhập/đăng ký -->
-                        <a href="../views/login.php" class="btn btn-sm btn-light">
+                        <a href="../views/login.php" class="btn btn-sm btn-light rounded-pill">
                             <i class="nav-link fas fa-user me-1"></i>
                             Đăng nhập/Đăng ký
                         </a>
