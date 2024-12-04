@@ -4,9 +4,9 @@ include '../../database/db.php';
 
 function classifyFeedbackAndSaveToDB($noiDung, $maPhanHoi, $conn) {
     // URL API
-    $url = 'http://127.0.0.1:5000/classify_feedback';
+    $url = 'https://wttx7hth-5000.asse.devtunnels.ms/classify_feedback';
     $payload = json_encode(['NoiDung' => $noiDung]);
-
+    error_log("Feedback Content: " . $noiDung);
     // Ghi log payload
     error_log("========== START API CALL ==========");
     error_log("Payload: " . $payload);
@@ -46,7 +46,7 @@ function classifyFeedbackAndSaveToDB($noiDung, $maPhanHoi, $conn) {
 
     // Giải mã phản hồi từ API
     $result = json_decode($response, true);
-    
+
     // Kiểm tra lỗi giải mã JSON
     if ($result === null) {
         error_log("JSON Decode Error: " . json_last_error_msg());
@@ -68,7 +68,7 @@ function classifyFeedbackAndSaveToDB($noiDung, $maPhanHoi, $conn) {
 
     // Nếu có giá trị Sentiment, lưu vào cơ sở dữ liệu
     $stmt = $conn->prepare("UPDATE danhgiaphanhoi SET Type = ? WHERE MaPhanHoi = ?");
-    
+
     // Kiểm tra lỗi SQL khi chuẩn bị câu lệnh
     if ($stmt === false) {
         error_log("SQL Error: " . $conn->error);
@@ -76,15 +76,22 @@ function classifyFeedbackAndSaveToDB($noiDung, $maPhanHoi, $conn) {
     }
 
     // Gắn giá trị vào câu lệnh SQL
-    $stmt->bind_param("si", $sentiment, $maPhanHoi);
+    $stmt->bind_param("si", $sentiment, $maPhanHoi); // 's' cho string, 'i' cho integer
+
+    // Kiểm tra kết nối cơ sở dữ liệu
+    if (!$conn->ping()) {
+        error_log("Connection to DB failed: " . $conn->error);
+        return false;
+    }
 
     // Thực thi câu lệnh SQL
     if ($stmt->execute()) {
         error_log("Updated MaPhanHoi $maPhanHoi with Type: $sentiment");
+        error_log("Affected rows: " . $stmt->affected_rows); // Kiểm tra số lượng bản ghi bị thay đổi
         $stmt->close();
         return true;
     } else {
-        error_log("SQL Execute Error: " . $stmt->error);
+        error_log("SQL Execute Error: " . $stmt->error); // Thêm lỗi khi thực thi câu lệnh
         $stmt->close();
         return false;
     }
@@ -210,98 +217,10 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
                                 </div>
                             </div>
                         </div>
-                        <?php include 'footer.php'; ?>
                     </div>
                 </div>
             </div>
         </div>
-        <?php include 'other.php'; ?>
     </div>
 </body>
-<script>
-    function confirmDelete(table, id, isEnable) {
-
-        Swal.fire({
-    title: 'Bạn có chắc chắn?',
-    text: "Bạn có chắc chắn muốn thay đổi trạng thái của đánh giá này không?",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Đồng ý',
-    cancelButtonText: 'Hủy'
-}).then((result) => {
-    if (result.isConfirmed) {
-        // Gọi hàm để cập nhật trạng thái
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "delete.php", true);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-        // Gửi dữ liệu đến server
-        xhr.send(`type=${table}&id=${id}&enableflag=${isEnable}`);
-
-        // Xử lý phản hồi từ server
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                Swal.fire(
-                    'Thành công!',
-                    'Trạng thái đã được thay đổi.',
-                    'success'
-                );
-                $('.card-body').load(' .card-body>.table-responsive');
-            } else {
-                Swal.fire(
-                    'Lỗi!',
-                    'Đã có lỗi xảy ra. Vui lòng thử lại.',
-                    'error'
-                );
-            }
-        };
-    }
-});
-
-}
-
-function callHK(SDT){
-    Swal.fire({
-    title: "Gọi cho hành khách?",
-    text: "Nói chuyện chuẩn mực, thái độ nghiêm túc,  đảm bảo tính uy tín của nhà xe.",
-    icon: 'info',
-    showCancelButton: true,
-    cancelButtonColor: '#d33',
-    confirmButtonColor: '#3085d6',
-    cancelButtonText: 'Hủy',
-    confirmButtonText: '<a href="tel:'+SDT+'" class="text-white">Gọi: '+SDT+'</a>'
-}).then((result) => {
-    if (result.isConfirmed) {
-        // Gọi hàm để cập nhật trạng thái
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "delete.php", true);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-        // Gửi dữ liệu đến server
-        xhr.send(`type=${table}&id=${id}&enableflag=${isEnable}`);
-
-        // Xử lý phản hồi từ server
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                Swal.fire(
-                    'Thành công!',
-                    'Trạng thái đã được thay đổi.',
-                    'success'
-                );
-                $('.card-body').load(' .card-body>.table-responsive');
-            } else {
-                Swal.fire(
-                    'Lỗi!',
-                    'Đã có lỗi xảy ra. Vui lòng thử lại.',
-                    'error'
-                );
-            }
-        };
-    }
-});
-}
-</script>
-
 </html>
