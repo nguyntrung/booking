@@ -4,6 +4,102 @@ session_start();
 // Kết nối cơ sở dữ liệu
 include '../../database/db.php';
 
+
+function classifyFeedbackAndSaveToDB($noiDung, $maPhanHoi, $conn) {
+    // URL API
+    $url = 'https://wttx7hth-5000.asse.devtunnels.ms/classify_feedback';
+    $payload = json_encode(['NoiDung' => $noiDung]);
+    error_log("Feedback Content: " . $noiDung);
+    // Ghi log payload
+    error_log("========== START API CALL ==========");
+    error_log("Payload: " . $payload);
+
+    // Cấu hình cURL
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_setopt($ch, CURLOPT_VERBOSE, true); // Bật chế độ debug cho cURL
+
+    // Gọi API
+    $response = curl_exec($ch);
+    $error = curl_errno($ch) ? curl_error($ch) : null;
+    $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    // Kiểm tra lỗi cURL
+    if ($error) {
+        error_log("Error: " . $error);
+        curl_close($ch);
+        return false; // Kết thúc nếu gặp lỗi
+    }
+
+    // Kiểm tra mã trạng thái HTTP
+    if ($http_status != 200) {
+        error_log("API Error: HTTP Status Code " . $http_status);
+        curl_close($ch);
+        return false; // API không trả về thành công
+    }
+
+    // Ghi log phản hồi API
+    error_log("Response: " . $response);
+
+    // Đóng cURL
+    curl_close($ch);
+
+    // Giải mã phản hồi từ API
+    $result = json_decode($response, true);
+
+    // Kiểm tra lỗi giải mã JSON
+    if ($result === null) {
+        error_log("JSON Decode Error: " . json_last_error_msg());
+        return false;
+    }
+
+    // Lấy giá trị Sentiment từ phản hồi
+    $sentiment = $result['Type'] ?? null;
+
+    // Kiểm tra nếu không có giá trị Sentiment
+    if (!$sentiment) {
+        error_log("Error: No 'Type' in API response.");
+        return false;
+    }
+
+    // Ghi log kết quả Sentiment
+    error_log("Sentiment: " . $sentiment);
+    error_log("========== END API CALL ==========");
+
+    // Nếu có giá trị Sentiment, lưu vào cơ sở dữ liệu
+    $stmt = $conn->prepare("UPDATE danhgiaphanhoi SET Type = ? WHERE MaPhanHoi = ?");
+
+    // Kiểm tra lỗi SQL khi chuẩn bị câu lệnh
+    if ($stmt === false) {
+        error_log("SQL Error: " . $conn->error);
+        return false;
+    }
+
+    // Gắn giá trị vào câu lệnh SQL
+    $stmt->bind_param("si", $sentiment, $maPhanHoi); // 's' cho string, 'i' cho integer
+
+    // Kiểm tra kết nối cơ sở dữ liệu
+    if (!$conn->ping()) {
+        error_log("Connection to DB failed: " . $conn->error);
+        return false;
+    }
+
+    // Thực thi câu lệnh SQL
+    if ($stmt->execute()) {
+        error_log("Updated MaPhanHoi $maPhanHoi with Type: $sentiment");
+        error_log("Affected rows: " . $stmt->affected_rows); // Kiểm tra số lượng bản ghi bị thay đổi
+        $stmt->close();
+        return true;
+    } else {
+        error_log("SQL Execute Error: " . $stmt->error); // Thêm lỗi khi thực thi câu lệnh
+        $stmt->close();
+        return false;
+    }
+}
+
 // Phan trang
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 if (!filter_var($page, FILTER_VALIDATE_INT)) {
@@ -196,6 +292,18 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
                                                     ?>
                                                     </div>
                                                 </td>
+                                                <td>
+                                                        <?php 
+                                                        $type = $phanhoi['Type'] ?? 'Chưa phân loại';
+                                                        echo htmlspecialchars($type); 
+
+                                                        if ($type === "Tích cực") {
+                                                            echo  ' 😊'; 
+                                                        } elseif ($type === "Tiêu cực") {
+                                                            echo ' 😢'; 
+                                                        }
+                                                        ?>
+                                                    </td>
                                             </tr>
                                             <?php endforeach; ?>
                                         </tbody>
