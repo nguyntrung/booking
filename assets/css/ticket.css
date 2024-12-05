@@ -222,17 +222,16 @@
 }
 
 .book-button {
-    background: #ff9ca4;
-    color: white;
-    border: #ff3344;
-    padding: 5px 15px;
-    border-radius: 15px;
+    background: #fff;
+    border: 1px solid #ff3344;
+    color: #ff3344;
     cursor: pointer;
     font-size: small;
 }
 
 .book-button:hover {
-    background: #ff3344;
+    background: #e02f38;
+    color: #ddd;
 }
 
 @media (max-width: 768px) {

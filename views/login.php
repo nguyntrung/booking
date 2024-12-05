@@ -1,5 +1,6 @@
 <?php
     include '../database/db.php';
+    session_start();
 ?>
 
 <!DOCTYPE html>
@@ -182,7 +183,26 @@
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
                     alert('Đăng nhập thành công!');
-                    window.location.href = '../index.php';
+
+                    // Store the email in sessionStorage
+                    sessionStorage.setItem('userEmail', email.value);
+
+                    // Send the email to the server via AJAX
+                    const formData = new FormData();
+                    formData.append('userEmail', email.value); // Append the email to the form data
+
+                    const response = await fetch('save_user_session.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '../index.php';
+                        console.log('Email sent to the server and session set successfully');
+                    } else {
+                        console.log('Error when sending email to the server');
+                    }
+
                 } catch (error) {
                     console.error(error);
                     alert('Đã xảy ra lỗi khi đăng nhập!');
@@ -221,12 +241,26 @@
 
             if (email.value && password.value.length >= 6 && password.value === confirmPassword.value) {
                 try {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
-                    alert('Đăng ký thành công!');
-                    window.location.href = '../index.php';
+                    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+                    alert('Đăng nhập thành công!');
+                    
+                    // Gửi email đến server để lưu vào cơ sở dữ liệu
+                    const formData = new FormData();
+                    formData.append('email', email.value);
+
+                    const response = await fetch('save_email.php', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '../index.php'; // Điều hướng sau khi lưu email thành công
+                    } else {
+                        alert('Lỗi khi lưu email vào cơ sở dữ liệu');
+                    }
                 } catch (error) {
                     console.error(error);
-                    alert('Đã xảy ra lỗi khi đăng ký!');
+                    alert('Đã xảy ra lỗi khi đăng nhập!');
                 }
             }
         });
