@@ -23,16 +23,10 @@
                     <a class="nav-link fw-bold" href="lookup.php">TRA CỨU VÉ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="#">TIN TỨC</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-bold" href="#">HÓA ĐƠN</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link fw-bold" href="contact.php">LIÊN HỆ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
+                    <a class="nav-link fw-bold" href="../views/aboutus.php">VỀ CHÚNG TÔI</a>
                 </li>
                 <?php if ($email): ?>
                     <li class="nav-item ms-auto"style="display: flex" >
