@@ -27,7 +27,7 @@
         <li class="menu-header fw-medium mt-4"><span class="menu-header-text">DỮ LIỆU</u></span></li>
         <!-- Tables -->
         <li class="menu-item">
-            <a href="benxe_manager.php" class="menu-link">
+            <a href="station_manager.php" class="menu-link">
                 <i class="menu-icon tf-icons ri-table-alt-line"></i>
                 <div data-i18n="Tables">Bến Xe</div>
             </a>
@@ -57,13 +57,13 @@
             </a>
         </li>
         <li class="menu-item">
-            <a href="quiz_manager.php" class="menu-link">
+            <a href="bus_manager.php" class="menu-link">
                 <i class="menu-icon tf-icons ri-table-alt-line"></i>
                 <div data-i18n="Tables">Xe</div>
             </a>
         </li>
         <li class="menu-item">
-            <a href="essay_manager.php" class="menu-link">
+            <a href="typebus_manager.php" class="menu-link">
                 <i class="menu-icon tf-icons ri-table-alt-line"></i>
                 <div data-i18n="Tables">Loại Xe</div>
             </a>
@@ -80,6 +80,12 @@
             <a href="feedback_manager.php" class="menu-link">
                 <i class="menu-icon tf-icons ri-table-alt-line"></i>
                 <div data-i18n="Tables">Quản Lý Phản Hồi</div>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="admin_contact.php" class="menu-link">
+                <i class="menu-icon tf-icons ri-table-alt-line"></i>
+                <div data-i18n="Tables">Quản Lý Liên Hệ</div>
             </a>
         </li>
         <!-- HÓA ĐƠN -->

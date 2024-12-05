@@ -62,7 +62,7 @@
    $query = "SELECT MaCho, MaChuyenXe FROM ve 
             JOIN chuyenxe ON ve.ChuyenXe = chuyenxe.MaChuyenXe 
             JOIN xe ON chuyenxe.Xe = xe.MaXe 
-            WHERE xe.LoaiXe = ? AND ve.enableflag = 1";
+            WHERE xe.LoaiXe = ? AND ve.enableflag = 0";
    $stmt = $conn->prepare($query);
    $stmt->bind_param('i', $LoaiXe);
    $stmt->execute();
@@ -93,33 +93,35 @@
       <?php @include '../includes/header.php'; ?>
       <div class="containers">
          <div class="left-section">
-            <div class="seat-selection">
-               <h5 class="text-center">Chọn ghế</h5>
-               <div class="legend">
-                  <div class="legend-item">
-                     <div class="legend-color" style="background: #9e9e9e"></div>
-                     <span>Đã bán</span>
-                  </div>
-                  <div class="legend-item">
-                     <div class="legend-color" style="border: 2px solid #2196F3"></div>
-                     <span>Còn trống</span>
-                  </div>
-                  <div class="legend-item">
-                     <div class="legend-color" style="background: #ff3344"></div>
-                     <span>Đang chọn</span>
-                  </div>
-               </div>
-               <div class="floor-container">
-                  <?php for ($floor = 0; $floor < $floors; $floor++): ?>
-                     <div class="floor">
-                           <div class="floor-label">Tầng <?php echo chr(65 + $floor); ?></div>
-                           <div id="floor<?php echo chr(65 + $floor); ?>"></div>
+            <div class="seat">
+               <div class="seat-selection">
+                  <h5 class="text-center">Chọn ghế</h5>
+                  <div class="legend">
+                     <div class="legend-item">
+                        <div class="legend-color" style="background: #9e9e9e"></div>
+                        <span>Đã bán</span>
                      </div>
-                  <?php endfor; ?>
+                     <div class="legend-item">
+                        <div class="legend-color" style="border: 2px solid #2196F3"></div>
+                        <span>Còn trống</span>
+                     </div>
+                     <div class="legend-item">
+                        <div class="legend-color" style="background: #ff3344"></div>
+                        <span>Đang chọn</span>
+                     </div>
+                  </div>
+                  <div class="floor-container">
+                     <?php for ($floor = 0; $floor < $floors; $floor++): ?>
+                        <div class="floor">
+                              <div class="floor-label text-center">Tầng <?php echo chr(65 + $floor); ?></div>
+                              <div id="floor<?php echo chr(65 + $floor); ?>"></div>
+                        </div>
+                     <?php endfor; ?>
+                  </div>
                </div>
             </div>
             <!-- Customer Information Form -->
-            <form id="customerForm">
+            <form id="customerForm" class="mt-3">
                <div class="customer-info">
                  <div class="info-clause-container">
                    <div class="info">
@@ -248,39 +250,41 @@
          });
 
          /**
- * Tạo sơ đồ chỗ ngồi cho từng tầng
- * @param {string} floorId - ID phần tử HTML của tầng
- * @param {string} prefix - Tiền tố ghế (ví dụ: 'A', 'B')
- */
-function createSeatLayout(floorId, prefix) {
-    const floor = document.getElementById(floorId);
+          * Tạo sơ đồ chỗ ngồi cho từng tầng
+          * @param {string} floorId - ID phần tử HTML của tầng
+          * @param {string} prefix - Tiền tố ghế (ví dụ: 'A', 'B')
+          */
+         function createSeatLayout(floorId, prefix) {
+            const floor = document.getElementById(floorId);
+            
+            const rowClass = (floors === 1 && seatsPerRow === 4) ? 'row-four-columns' : 'row';
 
-    // Lặp qua từng hàng
-    for (let row = 0; row < rowsPerFloor; row++) {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'row';
+            // Lặp qua từng hàng
+            for (let row = 0; row < rowsPerFloor; row++) {
+               const rowDiv = document.createElement('div');
+               rowDiv.className = 'row';
 
-        // Lặp qua từng ghế trong hàng
-        for (let seat = 1; seat <= seatsPerRow; seat++) {
-            const seatNumber = `${prefix}${String(row * seatsPerRow + seat).padStart(2, '0')}`;
-            const seatDiv = document.createElement('div');
-            const isSold = soldSeats.some(s => s.MaCho === seatNumber && s.MaChuyenXe === CURRENT_TRIP_ID);
+               // Lặp qua từng ghế trong hàng
+               for (let seat = 1; seat <= seatsPerRow; seat++) {
+                     const seatNumber = `${prefix}${String(row * seatsPerRow + seat).padStart(2, '0')}`;
+                     const seatDiv = document.createElement('div');
+                     const isSold = soldSeats.some(s => s.MaCho === seatNumber && s.MaChuyenXe === CURRENT_TRIP_ID);
 
-            // Kiểm tra ghế đã bán
-            seatDiv.className = `seat ${isSold ? 'sold' : 'available'}`;
-            seatDiv.textContent = seatNumber;
+                     // Kiểm tra ghế đã bán
+                     seatDiv.className = `seat ${isSold ? 'sold' : 'available'}`;
+                     seatDiv.textContent = seatNumber;
 
-            // Thêm sự kiện chọn ghế nếu ghế chưa bán
-            if (!isSold) {
-                seatDiv.addEventListener('click', () => toggleSeat(seatDiv, seatNumber));
+                     // Thêm sự kiện chọn ghế nếu ghế chưa bán
+                     if (!isSold) {
+                        seatDiv.addEventListener('click', () => toggleSeat(seatDiv, seatNumber));
+                     }
+
+                     rowDiv.appendChild(seatDiv);
+               }
+
+               floor.appendChild(rowDiv);
             }
-
-            rowDiv.appendChild(seatDiv);
-        }
-
-        floor.appendChild(rowDiv);
-    }
-}
+         }
 
          /**
           * Xử lý chọn/bỏ chọn ghế

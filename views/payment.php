@@ -4,7 +4,7 @@
    <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Thanh toán - FUTA Bus Lines</title>
+      <title>LacThan Bus</title>
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
       <link rel="stylesheet" href="../assets/css/style.css">
@@ -164,6 +164,30 @@
          .then(data => {
              if (data.success) {
                  alert('Thanh toán thành công! Mã hóa đơn: ' + data.invoiceId);
+                 // Gửi email hóa đơn
+                  fetch('send_invoice_email.php', {
+                        method: 'POST',
+                        headers: {
+                           'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                           fullName: fullName,
+                           email: email,
+                           totalPrice: totalPrice,
+                           route: route,
+                           departureTime: departureTime,
+                           seats: seats,
+                           invoiceId: data.invoiceId
+                        })
+                  })
+                  .then(emailResponse => emailResponse.json())
+                  .then(emailData => {
+                        if (emailData.success) {
+                           alert('Hóa đơn đã được gửi qua email');
+                        } else {
+                           alert('Lỗi khi gửi email: ' + emailData.message);
+                        }
+                  });
                  window.location.href = 'payment-success.php?invoice=' + data.invoiceId;
              } else {
                  alert('Thanh toán thất bại: ' + data.message);
