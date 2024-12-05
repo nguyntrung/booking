@@ -7,7 +7,7 @@ include '../../database/db.php';
 
 function classifyFeedbackAndSaveToDB($noiDung, $maPhanHoi, $conn) {
     // URL API
-    $url = 'https://wttx7hth-5000.asse.devtunnels.ms/classify_feedback';
+    $url = 'http://127.0.0.1:5000/classify_feedback';
     $payload = json_encode(['NoiDung' => $noiDung]);
     error_log("Feedback Content: " . $noiDung);
     // Ghi log payload
