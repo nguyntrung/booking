@@ -2,7 +2,7 @@
 session_start();
 
 // Kiểm tra xem người dùng đã đăng nhập chưa
-// if (!isset($_SESSION['MaNV'])) {
+// if (!isset($_SESSION['MaNguoiDung'])) {
 //     header('Location: login.php');
 //     exit();
 // }
@@ -10,30 +10,13 @@ session_start();
 // Kết nối cơ sở dữ liệu
 include '../../database/db.php';
 
-// Phan trang 1 / 1
-$page = isset($_GET['page']) ? $_GET['page'] : 1;
-if (!filter_var($page, FILTER_VALIDATE_INT)) {
-    die("Lỗi: Tham số 'page' không hợp lệ.");
-}
-$limit = 8; // Số sản phẩm mỗi trang
-$offset = ($page - 1) * $limit;
-$sql_count = "SELECT COUNT(*) AS total FROM benxe";
-$stmt_count = $conn->prepare($sql_count);
-$stmt_count->execute();
-$result_count = $stmt_count->get_result();
-$row_count = $result_count->fetch_assoc();
-$totalRows = $row_count['total'];  // Lấy tổng số dòng
-$totalPages = ceil($totalRows / $limit);
-// Phan trang 1 / 1
-
-// Lấy danh sách bến xe từ cơ sở dữ liệu
-$stmt = $conn->prepare("SELECT MaBenXe, TenBenXe, DiaChi FROM benxe ORDER BY MaBenXe ASC LIMIT ? OFFSET ?");
-// Phan trang 2 / 2 CHÚ Ý Thêm LIMIT và OFFSET vào truy vấn
-$stmt->bind_param("ii", $limit, $offset); 
-// Phan trang 2 / 2
+// Lấy danh sách câu hỏi tự luận từ cơ sở dữ liệu
+$stmt = $conn->prepare("SELECT MaLoaiXe, TenLoaiXe, SucChua
+                         FROM loaixe  
+                         ORDER BY MaLoaiXe ASC");
 $stmt->execute();
 $result = $stmt->get_result();
-$benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
+$loaiXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
 ?>
 
 <!doctype html>
@@ -44,7 +27,7 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
     <meta charset="utf-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Quản lý bến xe</title>
+    <title>Quản lý loại xe</title>
     <meta name="description" content="" />
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
@@ -81,24 +64,24 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
                     <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="card">
-                            <h5 class="card-header">Danh sách bến xe</h5>
+                            <h5 class="card-header">Danh sách các loại xe</h5>
                             <div class="card-body">
                                 <div class="table-responsive text-nowrap">
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>Mã bến xe</th>
-                                                <th>Tên bến xe</th>
-                                                <th>Địa chỉ</th>
+                                                <th>Mã loại xe</th>
+                                                <th>Tên loại</th>
+                                                <th>Sức chứa</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($benXeList as $benXe): ?>
+                                            <?php foreach ($loaiXeList as $loaiXe): ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($benXe['MaBenXe']); ?></td>
-                                                <td><?php echo htmlspecialchars($benXe['TenBenXe']); ?></td>
-                                                <td><?php echo htmlspecialchars($benXe['DiaChi']); ?></td>
+                                                <td><?php echo htmlspecialchars($loaiXe['MaLoaiXe']); ?></td>
+                                                <td><?php echo htmlspecialchars($loaiXe['TenLoaiXe']); ?></td>
+                                                <td><?php echo htmlspecialchars($loaiXe['SucChua']); ?></td>
                                                 <td>
                                                     <div class="dropdown">
                                                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
@@ -107,10 +90,10 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
                                                         </button>
                                                         <div class="dropdown-menu">
                                                             <a class="dropdown-item"
-                                                                href="add_update_benxe.php?id=<?php echo $benXe['MaBenXe']; ?>"><i
+                                                                href="add_update_typebus.php?id=<?php echo $loaiXe['MaLoaiXe']; ?>"><i
                                                                     class="ri-pencil-line me-1"></i> Chỉnh sửa</a>
                                                             <a class="dropdown-item" href="#"
-                                                                onclick="confirmDelete('<?php echo $benXe['MaBenXe']; ?>')"><i
+                                                                onclick="confirmDelete('<?php echo $loaiXe['MaLoaiXe']; ?>')"><i
                                                                     class="ri-delete-bin-6-line me-1"></i> Xóa</a>
                                                         </div>
                                                     </div>
@@ -119,40 +102,7 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
-                                    <!-- Phan trang 3 / 3 -->
-                                    <?php
-                                    // Hiển thị phân trang
-                                    echo '<nav aria-label="Page navigation" class="p-5 fs-3">';
-                                    echo '<ul class="pagination justify-content-center green-pagination">';
-
-                                    // Nút Previous
-                                    if ($page > 1) {
-                                        echo '<li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>';
-                                    } else {
-                                        echo '<li class="page-item disabled"><a class="page-link" href="#">&laquo; First</a></li>';
-                                    }
-
-                                    // Các nút số trang
-                                    for ($i = 1; $i <= $totalPages; $i++) {
-                                        if ($i == $page) {
-                                            echo '<li class="page-item active"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
-                                        } else {
-                                            echo '<li class="page-item"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
-                                        }
-                                    }
-
-                                    // Nút Next
-                                    if ($page < $totalPages) {
-                                        echo '<li class="page-item"><a class="page-link" href="?page=' . ($totalPages) . '">Last &raquo;</a></li>';
-                                    } else {
-                                        echo '<li class="page-item disabled"><a class="page-link" href="#">Last &raquo;</a></li>';
-                                    }
-
-                                    echo '</ul>';
-                                    echo '</nav>';
-                                    ?>
-                                    <!-- Phan trang 3 / 3 -->
-                                    <a href="add_update_benxe.php" class="btn btn-success mt-2">Thêm bến xe</a>
+                                    <a href="add_update_typebus.php" class="btn btn-success mt-2">Thêm loại xe</a>
                                 </div>
                             </div>
                         </div>
@@ -164,6 +114,40 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
             <div class="layout-overlay layout-menu-toggle"></div>
         </div>
         <?php include 'other.php'; ?>
+        <!-- Modal Xác Nhận Xóa -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Xác Nhận Xóa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Bạn có chắc chắn muốn xóa câu hỏi này?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xóa</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        let maCauHoiToDelete; 
+
+        function confirmDelete(maCauHoi) {
+            maCauHoiToDelete = maCauHoi; // Lưu mã câu hỏi vào biến toàn cục
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show(); // Hiển thị modal
+        }
+
+        // Xử lý khi nhấn nút xóa trong modal
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            window.location.href = 'delete.php?id=' + maCauHoiToDelete +
+                '&table=cauhoituluan&location=essay_manager.php&idColumn=MaCauHoi';
+        });
+        </script>
 </body>
 
 </html>
