@@ -360,9 +360,9 @@ $negative_percentage = $total_count > 0 ? round(($negative_count / $total_count)
                                 </div>
                             </div>
                         </div>
-                        <div class="container mt-5">
+                        <div class="container mt-5" style="width: 500px !important; height: 500px !important;">
                             <h5 class="text-center">Tỉ lệ phản hồi</h5>
-                            <canvas id="feedbackPieChart" style="width: 100px; height: 100px;"></canvas>
+                            <canvas id="feedbackPieChart" ></canvas>
                         </div>
 
                         <?php include 'footer.php'; ?>
@@ -420,39 +420,44 @@ $negative_percentage = $total_count > 0 ? round(($negative_count / $total_count)
 
 }
 const ctx = document.getElementById('feedbackPieChart').getContext('2d');
-    const feedbackPieChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Tích cực', 'Tiêu cực'],
-            datasets: [{
-                data: [
-                    <?php echo $positive_count; ?>,
-                    <?php echo $negative_count; ?>
-                ],
-                backgroundColor: ['#28a745', '#dc3545'],
-                borderColor: ['#ffffff', '#ffffff'],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let value = context.raw;
-                            let total = <?php echo $total_count; ?>;
-                            let percentage = total > 0 ? ((value / total) * 100).toFixed(2) : 0;
-                            return `${context.label}: ${value} (${percentage}%)`;
-                        }
+const feedbackPieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: ['Tích cực', 'Tiêu cực'],
+        datasets: [{
+            data: [
+                <?php echo $positive_count; ?>,
+                <?php echo $negative_count; ?>
+            ],
+            backgroundColor: ['#28a745', '#dc3545'],
+            borderColor: ['#ffffff', '#ffffff'],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: {
+                        size: 10
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let value = context.raw;
+                        let total = <?php echo $total_count; ?>;
+                        let percentage = total > 0 ? ((value / total) * 100).toFixed(2) : 0;
+                        return `${context.label}: ${value} (${percentage}%)`;
                     }
                 }
             }
         }
-    });
+    }
+});
 
 function callHK(SDT){
     Swal.fire({
