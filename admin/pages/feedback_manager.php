@@ -9,7 +9,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 if (!filter_var($page, FILTER_VALIDATE_INT)) {
     die("Lỗi: Tham số 'page' không hợp lệ.");
 }
-$limit = 4; // Số sản phẩm mỗi trang
+$limit = 8; // Số sản phẩm mỗi trang
 $offset = ($page - 1) * $limit;
 
 $sql_count = "SELECT COUNT(*) AS total FROM phanhoidanhgia";

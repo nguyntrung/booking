@@ -20,15 +20,19 @@ $totalPages = ceil($totalRows / $limit);
 
 // Lấy danh sách tuyến xe từ cơ sở dữ liệu, kết hợp với bảng benxe
 $stmt = $conn->prepare("
-    SELECT c.MaChuyenXe, t.TenTuyenXe, c.ThoiGianKhoiHanh, c.ThoiGianKetThuc, c.GiaTien, c.SoChoTrong, 
-        x.BienSoXe, nv.TenNV, nv.SDT, l.SucChua, c.enableflag, t.MaTuyenXe
+    SELECT c.MaChuyenXe, t.TenTuyenXe, c.ThoiGianKhoiHanh, c.ThoiGianKetThuc, 
+        c.GiaTien, c.SoChoTrong, x.BienSoXe, nv.TenNV, nv.SDT, 
+        l.SucChua, c.enableflag, t.MaTuyenXe
     FROM chuyenxe c
     LEFT JOIN tuyenxe t ON c.Tuyen = t.MaTuyenXe
     LEFT JOIN nhanvien nv ON c.TaiXe = nv.MaNV
     LEFT JOIN xe x ON c.Xe = x.MaXe
     LEFT JOIN loaixe l ON x.LoaiXe = l.MaLoaiXe
+    WHERE c.ThoiGianKhoiHanh BETWEEN CONCAT(CURDATE(), ' 00:00:00') 
+        AND CONCAT(DATE_ADD(CURDATE(), INTERVAL 1 DAY), ' 02:00:00')
     ORDER BY c.MaChuyenXe DESC
-    LIMIT ? OFFSET ?
+    LIMIT ? OFFSET ?;
+
 
 "); 
 // Phan trang 2 / 2 CHÚ Ý Thêm LIMIT và OFFSET vào truy vấn
@@ -92,14 +96,15 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                 <?php include 'navbar.php'; ?>
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
-                    <a href="./lichtrinh_add1.php" class="btn btn-success mb-3">Thêm chuyến xe</a>
+                    <a href="./lichtrinh_manager.php" class="btn btn-success mb-3">Xem tất cả</a>
                         <div class="card">
-                            <h5 class="card-header">Danh sách chuyến xe</h5>
+                            <h5 class="card-header">Danh sách chuyến xe hôm nay</h5>
                             <div class="card-body">
                                 <div class="table-responsive text-nowrap">
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
+                                                <th></th>
                                                 <th>Mã chuyến xe</th>
                                                 <th>Tên tuyến xe</th>
                                                 <th>Giờ khởi hành</th>
@@ -117,6 +122,7 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                                         <tbody>
                                             <?php foreach ($chuyenxeList as $chuyenxe): ?>
                                             <tr>
+                                                <td><a href="./lichtrinh_chitiet.php?id=<?php echo $chuyenxe['MaChuyenXe'] ?>"><i class="ri-eye-fill"></i></a></td>
                                                 <td><?php echo htmlspecialchars($chuyenxe['MaChuyenXe']); ?></td>
                                                 <td><?php echo htmlspecialchars($chuyenxe['TenTuyenXe']); ?></td>
                                                 <td><?php echo htmlspecialchars($chuyenxe['ThoiGianKhoiHanh']); ?></td>
