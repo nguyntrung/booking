@@ -197,7 +197,7 @@
                     });
 
                     if (response.ok) {
-                        window.location.href = '../index.php';
+                        window.location.href = 'index.php';
                         console.log('Email sent to the server and session set successfully');
                     } else {
                         console.log('Error when sending email to the server');
@@ -241,8 +241,8 @@
 
             if (email.value && password.value.length >= 6 && password.value === confirmPassword.value) {
                 try {
-                    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
-                    alert('Đăng nhập thành công!');
+                    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+                    alert('Đăng ký tài khoản thành công!');
                     
                     // Gửi email đến server để lưu vào cơ sở dữ liệu
                     const formData = new FormData();
@@ -254,7 +254,7 @@
                     });
 
                     if (response.ok) {
-                        window.location.href = '../index.php'; // Điều hướng sau khi lưu email thành công
+                        window.location.href = 'login.php'; // Điều hướng sau khi lưu email thành công
                     } else {
                         alert('Lỗi khi lưu email vào cơ sở dữ liệu');
                     }

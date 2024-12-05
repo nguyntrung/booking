@@ -148,10 +148,10 @@
             </div>
          </div>
       </div>
-      <form action="momo_payment.php" method="post">
+      <!-- <form action="momo_payment.php" method="post">
          <input type="hidden" name="amount" value="<?php echo $totalPrice; ?>">
          <button type="submit" class="btn btn-primary">Thanh toán bằng Momo</button>
-      </form>
+      </form> -->
       <?php @include '../includes/footer.php'; ?>
       <script>
          document.getElementById('btnPay').addEventListener('click', function () {
