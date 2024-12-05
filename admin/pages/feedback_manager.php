@@ -243,7 +243,6 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
         </div>
         <?php include 'other.php'; ?>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 </body>
 <script>
     function confirmDelete(table, id, isEnable) {

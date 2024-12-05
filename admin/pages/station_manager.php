@@ -11,7 +11,7 @@ session_start();
 include '../../database/db.php';
 
 // Lấy danh sách bến xe từ cơ sở dữ liệu
-$stmt = $conn->prepare("SELECT MaBenXe, TenBenXe, DiaChi FROM benxe ORDER BY MaBenXe ASC");
+$stmt = $conn->prepare("SELECT MaBenXe, TenBenXe, DiaChi, enableflag FROM benxe ORDER BY MaBenXe ASC");
 $stmt->execute();
 $result = $stmt->get_result();
 $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
@@ -71,6 +71,7 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
                                                 <th>Mã bến xe</th>
                                                 <th>Tên bến xe</th>
                                                 <th>Địa chỉ</th>
+                                                <th>Trạng thái</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -80,6 +81,18 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
                                                 <td><?php echo htmlspecialchars($benXe['MaBenXe']); ?></td>
                                                 <td><?php echo htmlspecialchars($benXe['TenBenXe']); ?></td>
                                                 <td><?php echo htmlspecialchars($benXe['DiaChi']); ?></td>
+                                                <td>
+                                                    <div class="d-flex justify-content-center">
+                                                    <?php 
+                                                        // Kiểm tra trạng thái enableflag và hiển thị màu sắc tương ứng
+                                                        if ($benXe['enableflag'] == 1) {
+                                                            echo "<a class='badge bg-danger' href='#' onclick=\"confirmDelete('benxe','{$benXe['MaBenXe']}', 0)\"> Ẩn </a>";
+                                                        } else {
+                                                            echo "<a class='badge bg-success' href='#' onclick=\"confirmDelete('benxe','{$benXe['MaBenXe']}', 1)\"> Kích hoạt </a>";
+                                                        }
+                                                    ?>
+                                                    </div>
+                                                </td>
                                                 <td>
                                                     <div class="dropdown">
                                                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
@@ -112,6 +125,91 @@ $benXeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
             <div class="layout-overlay layout-menu-toggle"></div>
         </div>
         <?php include 'other.php'; ?>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
+<script>
+    function confirmDelete(table, id, isEnable) {
 
+        Swal.fire({
+    title: 'Bạn có chắc chắn?',
+    text: "Bạn có chắc chắn muốn thay đổi trạng thái của đánh giá này không?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Đồng ý',
+    cancelButtonText: 'Hủy'
+}).then((result) => {
+    if (result.isConfirmed) {
+        // Gọi hàm để cập nhật trạng thái
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "delete.php", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        // Gửi dữ liệu đến server
+        xhr.send(`type=${table}&id=${id}&enableflag=${isEnable}`);
+
+        // Xử lý phản hồi từ server
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                Swal.fire(
+                    'Thành công!',
+                    'Trạng thái đã được thay đổi.',
+                    'success'
+                );
+                $('.card-body').load(' .card-body>.table-responsive');
+            } else {
+                Swal.fire(
+                    'Lỗi!',
+                    'Đã có lỗi xảy ra. Vui lòng thử lại.',
+                    'error'
+                );
+            }
+        };
+    }
+});
+
+}
+
+function callHK(SDT){
+    Swal.fire({
+    title: "Gọi cho hành khách?",
+    text: "Nói chuyện chuẩn mực, thái độ nghiêm túc,  đảm bảo tính uy tín của nhà xe.",
+    icon: 'info',
+    showCancelButton: true,
+    cancelButtonColor: '#d33',
+    confirmButtonColor: '#3085d6',
+    cancelButtonText: 'Hủy',
+    confirmButtonText: '<a href="tel:'+SDT+'" class="text-white">Gọi: '+SDT+'</a>'
+}).then((result) => {
+    if (result.isConfirmed) {
+        // Gọi hàm để cập nhật trạng thái
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "delete.php", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        // Gửi dữ liệu đến server
+        xhr.send(`type=${table}&id=${id}&enableflag=${isEnable}`);
+
+        // Xử lý phản hồi từ server
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                Swal.fire(
+                    'Thành công!',
+                    'Trạng thái đã được thay đổi.',
+                    'success'
+                );
+                $('.card-body').load(' .card-body>.table-responsive');
+            } else {
+                Swal.fire(
+                    'Lỗi!',
+                    'Đã có lỗi xảy ra. Vui lòng thử lại.',
+                    'error'
+                );
+            }
+        };
+    }
+});
+}
+</script>
 </html>
