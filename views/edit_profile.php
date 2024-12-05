@@ -65,13 +65,100 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
       <link rel="stylesheet" href="../assets/css/style.css">
+      <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .containers {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2.text-center {
+            font-size: 28px;
+            color: #333333;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        form .mb-3 {
+            margin-bottom: 20px;
+        }
+
+        form .form-label {
+            font-weight: bold;
+            color: #555555;
+            margin-bottom: 8px;
+        }
+
+        form .form-control, 
+        form .form-select {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 14px;
+            color: #333333;
+            box-shadow: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        form .form-control:focus, 
+        form .form-select:focus {
+            border-color: #f05454;
+            box-shadow: 0 0 0 0.2rem rgba(240, 84, 84, 0.25);
+        }
+
+        form .btn-primary {
+            background-color: #f05454;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        form .btn-primary:hover {
+            background-color: #d94242;
+        }
+
+        .alert {
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+      </style>
    </head>
    <body>
       <?php @include '../includes/header.php'; ?>
       <!-- Main Contact -->
-       <!-- Main Contact -->
-       <div class="container mt-5">
-        <h2 class="text-center">Chỉnh sửa thông tin</h2>
+       <div class="containers my-5">
+        <h5 class="text-center">CHỈNH SỬA THÔNG TIN</h5>
 
         <?php if (isset($error)): ?>
             <div class="alert alert-danger"><?php echo $error; ?></div>
@@ -94,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             <div class="mb-3">
                 <label for="NamSinh" class="form-label">Năm sinh:</label>
-                <input type="text" class="form-control" name="NamSinh" value="<?php echo htmlspecialchars($hanhKhach['NamSinh']); ?>" required>
+                <input type="date" class="form-control" name="NamSinh" value="<?php echo htmlspecialchars($hanhKhach['NamSinh']); ?>" required>
             </div>
             <div class="mb-3">
                 <label for="GioiTinh" class="form-label">Giới tính:</label>

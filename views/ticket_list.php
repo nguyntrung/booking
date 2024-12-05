@@ -105,7 +105,7 @@
             </div>
          </div>
       </div>
-      <div class="filter-section">
+      <!-- <div class="filter-section">
          <h3>Loại xe</h3>
          <div class="filter-options">
             <div class="filter-checkbox">
@@ -151,7 +151,7 @@
                <label for="floor2">Tầng dưới</label>
             </div>
          </div>
-      </div>
+      </div> -->
    </aside>
    <main class="main-content">
       <div class="route-header m-0">
@@ -160,7 +160,7 @@
         <?php endforeach; ?>
         <!-- <span class="trip-count">(<?= count($outbound_tickets) ?>)</span> -->
       </div>
-      <div class="quick-filters">
+      <!-- <div class="quick-filters">
          <div class="quick-filter">
             <i class="fas fa-tag"></i>
             Giá rẻ bất ngờ
@@ -173,7 +173,7 @@
             <i class="fas fa-chair"></i>
             Ghế trống
          </div>
-      </div>
+      </div> -->
       <?php if ($khu_hoi): ?>
       <div class="trip-tabs">
          <div class="trip-tab active" data-tab="outbound">
@@ -225,7 +225,7 @@
                Chọn chuyến
                </button> -->
                <a href="choose_seat.php?MaChuyenXe=<?= $ticket['MaChuyenXe'] ?>" 
-                  class="book-button text-decoration-none" data-trip="outbound">Chọn ghế
+                  class="book-button text-decoration-none px-4 py-2 rounded-pill" data-trip="outbound">Chọn ghế
                </a>
             </div>
          </div>

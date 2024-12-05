@@ -2,30 +2,32 @@
 session_start();
 include '../database/db.php';
 
-if (!isset($_SESSION['MaHK'])) {
-    header("Location: ../views/login.php");
-    exit();
-}
+// if (!isset($_SESSION['MaHK'])) {
+//     header("Location: ../views/login.php");
+//     exit();
+// }
 
-$userId = $_SESSION['MaHK'];
+// $userId = $_SESSION['MaHK'];
+if(isset($_GET["kq"])){
+    $kq=$_GET["kq"];
+    if($kq==1){
+        $mess="Đổi vé thành công";
+    } else {
+        $mess="Đổi vé thất bại";
+    }
+}
+$userId = 60;
 
 $bookingsQuery = "
-    SELECT 
-        hoadon.MaHoaDon, 
-        ve.TenTuyen, 
-        ve.ThoiGianKhoiHanh, 
-        ve.TrangThai,
-        GROUP_CONCAT(ve.MaCho ORDER BY ve.MaCho SEPARATOR ', ') AS MaCho,
-        hoadon.TongTien
-    FROM hoadon 
-    JOIN ve ON hoadon.MaHoaDon = ve.HoaDon
-    WHERE hoadon.HanhKhach = ?
-    GROUP BY hoadon.MaHoaDon
-    ORDER BY ve.ThoiGianKhoiHanh DESC
+    select v.MaVeXe, t.TenTuyenXe, c.ThoiGianKhoiHanh, v.MaCho , c.GiaTien
+    from ve v, hoadon hd, chuyenxe c, tuyenxe t 
+    where v.ChuyenXe=c.MaChuyenXe and c.Tuyen=t.MaTuyenXe 
+    and v.HoaDon=hd.MaHoaDon and hd.HanhKhach=? and v.enableflag=0
+    ORDER BY c.ThoiGianKhoiHanh DESC
 ";
 
 $stmt = $conn->prepare($bookingsQuery);
-$stmt->bind_param("s", $userId);
+$stmt->bind_param("i", $userId);
 $stmt->execute();
 $bookingsResult = $stmt->get_result();
 ?>
@@ -46,31 +48,44 @@ $bookingsResult = $stmt->get_result();
     <div class="container my-bookings-container">
         <div class="row">
             <div class="col-12">
-                <h2 class="my-4 text-center">
+                <h2 class="my-4 text-center title">
                     <i class="fas fa-ticket-alt me-2"></i>Vé Của Tôi
                 </h2>
+                <?php if ($mess): ?>
+                    <div id="successMessage" class="alert <?php echo $kq==1?'alert-success':'alert-danger'; ?>">
+                        <?php echo $mess; ?>
+                    </div>
+                <?php endif; ?>
 
                 <?php if ($bookingsResult->num_rows > 0): ?>
                     <div class="bookings-list">
                         <?php while ($booking = $bookingsResult->fetch_assoc()): ?>
-                            <div class="card booking-card mb-3">
+                            <?php
+                                $timezone = new DateTimeZone('Asia/Ho_Chi_Minh');
+                                $currentTime = new DateTime('now', $timezone);
+                                $departureTime = new DateTime($booking['ThoiGianKhoiHanh'], $timezone); 
+                                if ($departureTime < $currentTime) {
+                                    $hethan=1;
+                                }else {
+                                    $hethan=0;
+                                }                            
+                                ?>
+                            <div class="card booking-card mb-3 card_ve <?php echo $hethan==1?'hethan':'khonghethan'; ?>">
+                            <?php echo $hethan==1?'<p class="kyhieuhethan"><i class="fa-solid fa-circle-xmark"></i></p>':''; ?>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-8">
                                             <h5 class="card-title">
-                                                <?php echo htmlspecialchars($booking['TenTuyen']); ?>
+                                                <?php echo htmlspecialchars($booking['TenTuyenXe']); ?>
                                             </h5>
                                             <div class="booking-details">
                                                 <p>
-                                                    <strong>Mã Hóa Đơn:</strong> 
-                                                    <?php echo htmlspecialchars($booking['MaHoaDon']); ?>
+                                                    <strong>Mã Vé:</strong> 
+                                                    <?php echo htmlspecialchars($booking['MaVeXe']); ?>
                                                 </p>
                                                 <p>
                                                     <strong>Ngày Khởi Hành:</strong> 
-                                                    <?php 
-                                                    $departureTime = new DateTime($booking['ThoiGianKhoiHanh']);
-                                                    echo $departureTime->format('H:i d/m/Y'); 
-                                                    ?>
+                                                    <?php  echo $departureTime->format('H:i d/m/Y');  ?>
                                                 </p>
                                                 <p>
                                                     <strong>Số Ghế:</strong> 
@@ -80,19 +95,15 @@ $bookingsResult = $stmt->get_result();
                                         </div>
                                         <div class="col-md-4 text-end">
                                             <div class="booking-price mb-2">
-                                                <strong><?php echo number_format($booking['TongTien'], 0, ',', '.'); ?>đ</strong>
+                                                <strong><?php echo number_format($booking['GiaTien'], 0, ',', '.'); ?>đ</strong>
                                             </div>
                                             <div class="booking-actions">
-                                                <a href="../payment/generate_pdf.php?invoice=<?php echo $booking['MaHoaDon']; ?>" 
+                                                <?php echo $hethan==1?'':'<a href="./doive.php?id='.$booking["MaVeXe"] .'" 
                                                    class="btn btn-sm btn-outline-primary me-2">
-                                                    <i class="fas fa-print"></i> In Vé
-                                                </a>
-                                                <?php if ($booking['TrangThai'] == 'upcoming'): ?>
-                                                    <button class="btn btn-sm btn-danger cancel-booking" 
-                                                            data-invoice-id="<?php echo $booking['MaHoaDon']; ?>">
-                                                        <i class="fas fa-times-circle"></i> Hủy Vé
-                                                    </button>
-                                                <?php endif; ?>
+                                                    <i class="fa-solid fa-rotate-right"></i> Đổi vé
+                                                </a>'; ?>
+                                                
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -146,5 +157,17 @@ $bookingsResult = $stmt->get_result();
             });
         });
     </script>
+    <script>
+    // Tìm phần tử thông báo
+    const successMessage = document.getElementById('successMessage');
+    
+    // Nếu thông báo tồn tại, đặt thời gian để ẩn sau 5 giây
+    if (successMessage) {
+        setTimeout(() => {
+            successMessage.style.display = 'none'; // Ẩn thông báo
+        }, 3000); // 5000ms = 5 giây
+    }
+</script>
+
 </body>
 </html>

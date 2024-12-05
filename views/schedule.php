@@ -19,72 +19,38 @@ include '../database/db.php';
     <div class="container py-5">
         <div class="col-md-8" style="margin: 0 auto;">
             <div class="card-header text-center">
-                <h4 class="mb-0">TÌM KIẾM LỊCH TRÌNH</h4>
+                <h4 class="mb-0">LỊCH TRÌNH</h4>
             </div>
             <div class="card-body">
-                <form method="POST" action="schedule.php">
-                    <div class="mb-3">
-                        <input type="text" class="form-control rounded-pill" id="start-point" name="BenDi" placeholder="Nhập điểm đi">
-                    </div>
-                    <div class="mb-3">
-                        <input type="text" class="form-control rounded-pill" id="end-point" name="BenDen" placeholder="Nhập điểm đến">
-                    </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary rounded-pill" style="max-width: 3q00px; margin: 0 auto">Tìm tuyến xe</button>
-                    </div>
-                </form>
+                
             </div>
         </div>
 
         <?php
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    // Lấy thông tin từ form
 
-    $BenDi = trim($_POST['BenDi'] ?? '');
-
-    $BenDen = trim($_POST['BenDen'] ?? '');
+    
 
 
 
-    if (!empty($BenDi) && !empty($BenDen)) {
+  
 
         // Truy vấn SQL để lấy dữ liệu các tuyến xe
 
-        $sql = "SELECT 
-                tuyenxe.TenTuyenXe, 
-                loaixe.TenLoaiXe, 
-                tuyenxe.KhoangCach, 
-                TIMEDIFF(chuyenxe.ThoiGianKetThuc, chuyenxe.ThoiGianKhoiHanh) AS ThoiGianHanhTrinh, 
-                chuyenxe.GiaTien
-            FROM tuyenxe
-            JOIN benxe AS benxe_di ON tuyenxe.BenDi = benxe_di.MaBenXe
-            JOIN benxe AS benxe_den ON tuyenxe.BenDen = benxe_den.MaBenXe
-            JOIN chuyenxe ON tuyenxe.MaTuyenXe = chuyenxe.Tuyen
-            JOIN loaixe ON chuyenxe.Xe = loaixe.MaLoaiXe
-            WHERE benxe_di.TenBenXe LIKE ? 
-            AND benxe_den.TenBenXe LIKE ?
-        ";
+        $sql1 = "SELECT * from tuyenxe where enableflag=0 ";
 
-        $stmt = $conn->prepare($sql);
+        $stmt1 = $conn->prepare($sql1);
 
-        // Thêm ký tự `%` để tìm kiếm gần đúng
+        $stmt1->execute();
 
-        $BenDi = '%' . $BenDi . '%';
-
-        $BenDen = '%' . $BenDen . '%';
+        $result1 = $stmt1->get_result();
 
         
-        $stmt->bind_param("ss", $BenDi, $BenDen);
-
-        $stmt->execute();
-
-        $result = $stmt->get_result();
 
 
 
-        if ($result->num_rows > 0) {
+        if ($result1->num_rows > 0) {
 
             echo "<div class='table-responsive mt-4'>";
 
@@ -95,14 +61,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             echo "<tr>
 
                     <th>Tuyến xe</th>
-
-                    <th>Loại xe</th>
-
                     <th>Quãng đường (km)</th>
+                    <th>Bến đi</th>
+                    <th>Bến đến</th>
 
-                    <th>Thời gian hành trình</th>
-
-                    <th>Giá vé (VNĐ)</th>
 
                   </tr>";
 
@@ -110,19 +72,42 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
 
-            while ($row = $result->fetch_assoc()) {
+            while ($row = $result1->fetch_assoc()) {
 
                 echo "<tr>";
 
                 echo "<td>" . $row['TenTuyenXe'] . "</td>";
-
-                echo "<td>" . $row['TenLoaiXe'] . "</td>";
-
                 echo "<td class='text-center'>" . $row['KhoangCach'] . "</td>";
 
-                echo "<td class='text-center'>" . $row['ThoiGianHanhTrinh'] . "</td>";
+                $sql2 = "SELECT * from benxe where enableflag=0 ";
 
-                echo "<td class='text-end'>" . number_format($row['GiaTien'], 0, ',', '.') . "</td>";
+                $stmt2 = $conn->prepare($sql2);
+
+                $stmt2->execute();
+
+                $result2 = $stmt2->get_result();
+                while ($row2 = $result2->fetch_assoc()){
+                    if($row2["MaBenXe"]==$row["BenDi"]){
+                        echo "<td class='text-center'>" . $row2['TenBenXe'] . "</td>";
+                        break;
+                    }
+                }
+
+                $sql2 = "SELECT * from benxe where enableflag=0 ";
+
+                $stmt2 = $conn->prepare($sql2);
+
+                $stmt2->execute();
+
+                $result2 = $stmt2->get_result();
+                while ($row2 = $result2->fetch_assoc()){
+                    if($row2["MaBenXe"]==$row["BenDen"]){
+                        echo "<td class='text-center'>" . $row2['TenBenXe'] . "</td>";
+                        break;
+                    }
+                }
+
+                
 
                 echo "</tr>";
 
@@ -135,18 +120,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         }
 
-        $stmt->close();
-
-    } else {"<div class='alert alert-danger text-center mt-4'>Vui lòng nhập đầy đủ thông tin điểm đi và điểm đến!</div>";
-
-    }
-
-}
-
+        
 ?>
     </div>
-
-    <?php @include '../includes/footer.php'; ?>
+    <?php include '../includes/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/script.js"></script>
 </body>

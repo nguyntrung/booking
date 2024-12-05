@@ -4,6 +4,102 @@ session_start();
 // Kết nối cơ sở dữ liệu
 include '../../database/db.php';
 
+
+function classifyFeedbackAndSaveToDB($noiDung, $maPhanHoi, $conn) {
+    // URL API
+    $url = 'https://wttx7hth-5000.asse.devtunnels.ms/classify_feedback';
+    $payload = json_encode(['NoiDung' => $noiDung]);
+    error_log("Feedback Content: " . $noiDung);
+    // Ghi log payload
+    error_log("========== START API CALL ==========");
+    error_log("Payload: " . $payload);
+
+    // Cấu hình cURL
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_setopt($ch, CURLOPT_VERBOSE, true); // Bật chế độ debug cho cURL
+
+    // Gọi API
+    $response = curl_exec($ch);
+    $error = curl_errno($ch) ? curl_error($ch) : null;
+    $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    // Kiểm tra lỗi cURL
+    if ($error) {
+        error_log("Error: " . $error);
+        curl_close($ch);
+        return false; // Kết thúc nếu gặp lỗi
+    }
+
+    // Kiểm tra mã trạng thái HTTP
+    if ($http_status != 200) {
+        error_log("API Error: HTTP Status Code " . $http_status);
+        curl_close($ch);
+        return false; // API không trả về thành công
+    }
+
+    // Ghi log phản hồi API
+    error_log("Response: " . $response);
+
+    // Đóng cURL
+    curl_close($ch);
+
+    // Giải mã phản hồi từ API
+    $result = json_decode($response, true);
+
+    // Kiểm tra lỗi giải mã JSON
+    if ($result === null) {
+        error_log("JSON Decode Error: " . json_last_error_msg());
+        return false;
+    }
+
+    // Lấy giá trị Sentiment từ phản hồi
+    $sentiment = $result['Type'] ?? null;
+
+    // Kiểm tra nếu không có giá trị Sentiment
+    if (!$sentiment) {
+        error_log("Error: No 'Type' in API response.");
+        return false;
+    }
+
+    // Ghi log kết quả Sentiment
+    error_log("Sentiment: " . $sentiment);
+    error_log("========== END API CALL ==========");
+
+    // Nếu có giá trị Sentiment, lưu vào cơ sở dữ liệu
+    $stmt = $conn->prepare("UPDATE danhgiaphanhoi SET Type = ? WHERE MaPhanHoi = ?");
+
+    // Kiểm tra lỗi SQL khi chuẩn bị câu lệnh
+    if ($stmt === false) {
+        error_log("SQL Error: " . $conn->error);
+        return false;
+    }
+
+    // Gắn giá trị vào câu lệnh SQL
+    $stmt->bind_param("si", $sentiment, $maPhanHoi); // 's' cho string, 'i' cho integer
+
+    // Kiểm tra kết nối cơ sở dữ liệu
+    if (!$conn->ping()) {
+        error_log("Connection to DB failed: " . $conn->error);
+        return false;
+    }
+
+    // Thực thi câu lệnh SQL
+    if ($stmt->execute()) {
+        error_log("Updated MaPhanHoi $maPhanHoi with Type: $sentiment");
+        error_log("Affected rows: " . $stmt->affected_rows); // Kiểm tra số lượng bản ghi bị thay đổi
+        $stmt->close();
+        return true;
+    } else {
+        error_log("SQL Execute Error: " . $stmt->error); // Thêm lỗi khi thực thi câu lệnh
+        $stmt->close();
+        return false;
+    }
+}
+
 // Phan trang
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 if (!filter_var($page, FILTER_VALIDATE_INT)) {
@@ -51,6 +147,7 @@ $stmt = $conn->prepare("
         ph.MaPhanHoi,
         ph.NoiDung,
         ph.DanhGia,
+        ph.Type,
         hk.TenHK AS TenHanhKhach,
         hk.SDT AS SDT,
         ph.enableflag
@@ -78,6 +175,22 @@ if ($stmt->error) {
 // Lấy kết quả truy vấn
 $result = $stmt->get_result();
 $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
+
+
+$sql_positive = "SELECT COUNT(*) AS positive_count FROM phanhoidanhgia WHERE Type = 'Tích cực'";
+$sql_negative = "SELECT COUNT(*) AS negative_count FROM phanhoidanhgia WHERE Type = 'Tiêu cực'";
+
+$result_positive = $conn->query($sql_positive);
+$result_negative = $conn->query($sql_negative);
+
+$positive_count = $result_positive->fetch_assoc()['positive_count'] ?? 0;
+$negative_count = $result_negative->fetch_assoc()['negative_count'] ?? 0;
+
+$total_count = $positive_count + $negative_count;
+
+// Tính tỷ lệ phần trăm
+$positive_percentage = $total_count > 0 ? round(($positive_count / $total_count) * 100, 2) : 0;
+$negative_percentage = $total_count > 0 ? round(($negative_count / $total_count) * 100, 2) : 0;
 ?>
 
 
@@ -170,6 +283,7 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
                                                         <button class="btn badge <?php echo $loc=='2' ? 'bg-primary' : 'bg-secondary'; ?>"><i class="ri-expand-up-down-fill"></i></button>
                                                     </form>
                                                 </th>
+                                                <th>Loại</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -196,6 +310,18 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
                                                     ?>
                                                     </div>
                                                 </td>
+                                                <td>
+                                                        <?php 
+                                                        $type = $phanhoi['Type'] ?? 'Chưa phân loại';
+                                                        echo htmlspecialchars($type); 
+
+                                                        if ($type === "Tích cực") {
+                                                            echo  ' 😊'; 
+                                                        } elseif ($type === "Tiêu cực") {
+                                                            echo ' 😢'; 
+                                                        }
+                                                        ?>
+                                                    </td>
                                             </tr>
                                             <?php endforeach; ?>
                                         </tbody>
@@ -234,6 +360,11 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
                                 </div>
                             </div>
                         </div>
+                        <div class="container mt-5" style="width: 500px !important; height: 500px !important;">
+                            <h5 class="text-center">Tỉ lệ phản hồi</h5>
+                            <canvas id="feedbackPieChart" ></canvas>
+                        </div>
+
                         <?php include 'footer.php'; ?>
                     </div>
                     <!-- Content wrapper -->
@@ -243,6 +374,9 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
         </div>
         <?php include 'other.php'; ?>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </body>
 <script>
     function confirmDelete(table, id, isEnable) {
@@ -287,6 +421,45 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
 });
 
 }
+const ctx = document.getElementById('feedbackPieChart').getContext('2d');
+const feedbackPieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: ['Tích cực', 'Tiêu cực'],
+        datasets: [{
+            data: [
+                <?php echo $positive_count; ?>,
+                <?php echo $negative_count; ?>
+            ],
+            backgroundColor: ['#28a745', '#dc3545'],
+            borderColor: ['#ffffff', '#ffffff'],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: {
+                        size: 10
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let value = context.raw;
+                        let total = <?php echo $total_count; ?>;
+                        let percentage = total > 0 ? ((value / total) * 100).toFixed(2) : 0;
+                        return `${context.label}: ${value} (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
 
 function callHK(SDT){
     Swal.fire({

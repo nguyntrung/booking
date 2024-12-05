@@ -17,21 +17,21 @@
             <h2 class="payment-title">Chọn phương thức thanh toán</h2>
             <div class="payment-option" data-method="futapay">
                <input type="radio" name="payment" class="payment-radio">
-               <img src="path/to/futapay-logo.png" alt="FUTAPay" class="payment-logo">
+               <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTp1v7T287-ikP1m7dEUbs2n1SbbLEqkMd1ZA&s" alt="VNPay" class="payment-logo">
                <div class="payment-info">
-                  <div class="payment-name">FUTAPay</div>
+                  <div class="payment-name">VNPay</div>
                </div>
             </div>
             <div class="payment-option" data-method="zalopay">
                <input type="radio" name="payment" class="payment-radio">
-               <img src="path/to/zalopay-logo.png" alt="ZaloPay" class="payment-logo">
+               <img src="https://play-lh.googleusercontent.com/woYAzPCG1I8Z8HXCsdH3diL7oly0N8uth_1g6k7R_9Gu7lbxrsYeriEXLecRG2E9rP0" alt="ZaloPay" class="payment-logo">
                <div class="payment-info">
                   <div class="payment-name">ZaloPay</div>
-                  <div class="payment-promo">Nhập mã GIAMSAU - giảm 50% tối đa 40k cho bạn mới, nhập ZLPFUTA10 giảm 10k cho đơn từ 280k</div>
+                  <!-- <div class="payment-promo">Nhập mã GIAMSAU - giảm 50% tối đa 40k cho bạn mới, nhập ZLPFUTA10 giảm 10k cho đơn từ 280k</div> -->
                </div>
             </div>
             <div class="qr-section">
-               <img src="qr-code.png" alt="QR Code" class="qr-code">
+               <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTB7Ziu00uFIRyBfM66pcWDH9inlQKt9hSA_g&s" alt="QR Code" class="qr-code">
                <div class="payment-instructions">
                   <h3>Hướng dẫn thanh toán bằng VNPay</h3>
                   <div class="instruction-step">
@@ -48,7 +48,7 @@
                   </div>
                </div>
                <div>
-                  <button class="btn btn-primary" id="btnPay">Thanh Toán</button>
+                  <button class="btn btn-primary rounded-pill" id="btnPay">Thanh Toán</button>
                </div>
             </div>
          </div>
@@ -66,9 +66,27 @@
                $totalPrice = intval($_GET['totalPrice']);
                $tripId = isset($_GET['tripId']) ? intval($_GET['tripId']) : 0;
                
+               $query = "SELECT b1.TenBenXe AS TenBenDi, b2.TenBenXe AS TenBenDen 
+                  FROM chuyenxe c 
+                  JOIN tuyenxe t ON c.Tuyen = t.MaTuyenXe 
+                  JOIN benxe b1 ON t.BenDi = b1.MaBenXe 
+                  JOIN benxe b2 ON t.BenDen = b2.MaBenXe WHERE c.MaChuyenXe = ?";
+   
+               if ($stmt = $conn->prepare($query)) {
+                     $stmt->bind_param("i", $tripId);
+                     $stmt->execute();
+                     $stmt->bind_result($tenBenDi, $tenBenDen);
+                     $stmt->fetch();
+                     $stmt->close();
+               } else {
+                     $tenBenDi = $tenBenDen = "Không có thông tin";
+               }
+               
+               $conn->commit();
+
                // Start transaction
                $conn->begin_transaction();
-               ?>
+            ?>
             <div class="total-amount"><?php echo number_format($totalPrice, 0, ',', '.'); ?>đ</div>
             <div class="timer">Thời gian giữ chỗ còn lại 14:51</div>
             <div class="section-title">
@@ -87,7 +105,7 @@
                <div class="info-value"><?php echo htmlspecialchars($email); ?></div>
             </div>
             <div class="section-title">
-               Thông tin lượt đi <i class="fas fa-info-circle"></i>
+               Thông tin lượt đi <i class="fas fa-info-circle" style="color: #ff3344"></i>
             </div>
             <div class="info-row">
                <div class="info-label">Tuyến xe</div>
@@ -107,14 +125,14 @@
             </div>
             <div class="info-row">
                <div class="info-label">Điểm lên xe</div>
-               <div class="info-value">HCM</div>
+               <div class="info-value"><?php echo htmlspecialchars($tenBenDi); ?></div>
             </div>
             <div class="info-row">
                <div class="info-label">Điểm trả khách</div>
-               <div class="info-value">Mũi Né</div>
+               <div class="info-value"><?php echo htmlspecialchars($tenBenDen); ?></div>
             </div>
             <div class="section-title">
-               Chi tiết giá <i class="fas fa-info-circle"></i>
+               Chi tiết giá <i class="fas fa-info-circle" style="color: #ff3344"></i>
             </div>
             <div class="info-row">
                <div class="info-label">Giá vé lượt đi</div>
@@ -130,6 +148,10 @@
             </div>
          </div>
       </div>
+      <!-- <form action="momo_payment.php" method="post">
+         <input type="hidden" name="amount" value="<?php echo $totalPrice; ?>">
+         <button type="submit" class="btn btn-primary">Thanh toán bằng Momo</button>
+      </form> -->
       <?php @include '../includes/footer.php'; ?>
       <script>
          document.getElementById('btnPay').addEventListener('click', function () {
@@ -238,7 +260,7 @@
          
          // Start countdown with 15 minutes (900 seconds)
          window.onload = function () {
-         let fifteenMinutes = 60 * 0.1,
+         let fifteenMinutes = 60 * 15,
              display = document.querySelector('.timer');
          startTimer(fifteenMinutes, display);
          };

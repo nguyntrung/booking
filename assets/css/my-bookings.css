@@ -1,0 +1,30 @@
+.btn-outline-primary{
+    border-color: #ff3344;
+    color: #ff3344;
+}
+.btn-outline-primary:hover{
+    background-color: #ff3344;
+    border-color: #ff3344;
+}
+.card_ve {
+    border-color: #ccc;
+    box-shadow: 10px 10px 10px #ccc;
+    position: relative;
+}
+.title {
+    color: #ff3344;
+}
+.hethan {
+    opacity: 0.5;
+    box-shadow: 0 0 0 #ccc;
+}
+.kyhieuhethan {
+    position: absolute;
+    font-size: 70px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    color: #ff3344;
+    border: 1px solid #ff3344;
+    border-style:dashed;
+}

@@ -1,4 +1,5 @@
 <?php
+include '../database/db.php';
 // send_invoice_email.php
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -13,6 +14,23 @@ $route = $data['route'];
 $departureTime = $data['departureTime'];
 $seats = $data['seats'];
 $invoiceId = $data['invoiceId'];
+
+$query = "SELECT v.MaVeXe
+          FROM ve v
+          JOIN hoadon h ON v.HoaDon = h.MaHoaDon
+          WHERE v.HoaDon = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("s", $invoiceId);
+$stmt->execute();
+$stmt->bind_result($maVeXe);
+
+$ticketCodes = [];
+while ($stmt->fetch()) {
+    $ticketCodes[] = $maVeXe;
+}
+$stmt->close();
+
+$ticketCodesStr = implode('-', $ticketCodes);
 
 $bodyContent = '
 <!DOCTYPE html>
@@ -38,7 +56,7 @@ $bodyContent = '
             padding: 30px;
         }
         .invoice-header {
-            background-color: #007bff;
+            background-color: #ff3344;
             color: white;
             text-align: center;
             padding: 15px;
@@ -83,6 +101,10 @@ $bodyContent = '
         
         <div class="invoice-details">
             <table>
+                <tr>
+                    <td class="label">Mã vé:</td>
+                    <td>' . htmlspecialchars($ticketCodesStr) . '</td>
+                </tr>
                 <tr>
                     <td class="label">Họ và tên:</td>
                     <td>' . htmlspecialchars($fullName) . '</td>
