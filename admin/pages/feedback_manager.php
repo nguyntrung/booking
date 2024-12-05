@@ -7,7 +7,7 @@ include '../../database/db.php';
 
 function classifyFeedbackAndSaveToDB($noiDung, $maPhanHoi, $conn) {
     // URL API
-    $url = 'https://wttx7hth-5000.asse.devtunnels.ms/classify_feedback';
+    $url = 'http://127.0.0.1:5000/classify_feedback';
     $payload = json_encode(['NoiDung' => $noiDung]);
     error_log("Feedback Content: " . $noiDung);
     // Ghi log payload
@@ -147,6 +147,7 @@ $stmt = $conn->prepare("
         ph.MaPhanHoi,
         ph.NoiDung,
         ph.DanhGia,
+        ph.Type,
         hk.TenHK AS TenHanhKhach,
         hk.SDT AS SDT,
         ph.enableflag
@@ -174,6 +175,22 @@ if ($stmt->error) {
 // Lấy kết quả truy vấn
 $result = $stmt->get_result();
 $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
+
+
+$sql_positive = "SELECT COUNT(*) AS positive_count FROM phanhoidanhgia WHERE Type = 'Tích cực'";
+$sql_negative = "SELECT COUNT(*) AS negative_count FROM phanhoidanhgia WHERE Type = 'Tiêu cực'";
+
+$result_positive = $conn->query($sql_positive);
+$result_negative = $conn->query($sql_negative);
+
+$positive_count = $result_positive->fetch_assoc()['positive_count'] ?? 0;
+$negative_count = $result_negative->fetch_assoc()['negative_count'] ?? 0;
+
+$total_count = $positive_count + $negative_count;
+
+// Tính tỷ lệ phần trăm
+$positive_percentage = $total_count > 0 ? round(($positive_count / $total_count) * 100, 2) : 0;
+$negative_percentage = $total_count > 0 ? round(($negative_count / $total_count) * 100, 2) : 0;
 ?>
 
 
@@ -266,6 +283,7 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
                                                         <button class="btn badge <?php echo $loc=='2' ? 'bg-primary' : 'bg-secondary'; ?>"><i class="ri-expand-up-down-fill"></i></button>
                                                     </form>
                                                 </th>
+                                                <th>Loại</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -342,6 +360,11 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
                                 </div>
                             </div>
                         </div>
+                        <div class="container mt-5">
+                            <h5 class="text-center">Tỉ lệ phản hồi</h5>
+                            <canvas id="feedbackPieChart" style="width: 100px; height: 100px;"></canvas>
+                        </div>
+
                         <?php include 'footer.php'; ?>
                     </div>
                     <!-- Content wrapper -->
@@ -351,7 +374,7 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
         </div>
         <?php include 'other.php'; ?>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 <script>
     function confirmDelete(table, id, isEnable) {
@@ -396,6 +419,40 @@ $phanhoiList = $result->fetch_all(MYSQLI_ASSOC);
 });
 
 }
+const ctx = document.getElementById('feedbackPieChart').getContext('2d');
+    const feedbackPieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Tích cực', 'Tiêu cực'],
+            datasets: [{
+                data: [
+                    <?php echo $positive_count; ?>,
+                    <?php echo $negative_count; ?>
+                ],
+                backgroundColor: ['#28a745', '#dc3545'],
+                borderColor: ['#ffffff', '#ffffff'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let value = context.raw;
+                            let total = <?php echo $total_count; ?>;
+                            let percentage = total > 0 ? ((value / total) * 100).toFixed(2) : 0;
+                            return `${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
 
 function callHK(SDT){
     Swal.fire({
