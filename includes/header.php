@@ -1,4 +1,8 @@
-<?php session_start(); ?>
+<?php
+    session_start(); 
+    $email = isset($_SESSION['userEmail']) ? $_SESSION['userEmail'] : '';
+?>
+
 <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
     <div class="container">
         <a class="navbar-brand" href="../views">
@@ -30,21 +34,26 @@
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
                 </li>
-                <li class="nav-item ms-auto">
-                    <?php if (isset($_SESSION['user'])): ?>
-                        <!-- Nếu người dùng đã đăng nhập, hiển thị tên người dùng -->
-                        <a href="#" class="btn btn-sm btn-light">
-                            <i class="nav-link fas fa-user me-1"></i>
-                            Xin chào, <?= $_SESSION['user']; ?>
-                        </a>    
-                    <?php else: ?>
-                        <!-- Nếu chưa đăng nhập, hiển thị nút đăng nhập/đăng ký -->
+                <?php if ($email): ?>
+                    <li class="nav-item ms-auto">
+                        <a class="nav-link fw-bold" href="#">
+                            Xin chào, <?= $email ?>
+                        </a>
+                    </li>
+                    <li class="nav-item ms-auto">
+                        <a href="logout.php" class="btn btn-sm btn-light rounded-pill">
+                            <i class="nav-link fas fa-sign-out-alt me-1"></i>
+                            Đăng xuất
+                        </a>
+                    </li>
+                <?php else: ?>
+                    <li class="nav-item ms-auto">
                         <a href="../views/login.php" class="btn btn-sm btn-light rounded-pill">
                             <i class="nav-link fas fa-user me-1"></i>
                             Đăng nhập/Đăng ký
                         </a>
-                    <?php endif; ?>
-                </li>
+                    </li>
+                <?php endif; ?>
             </ul>
         </div>
     </div>

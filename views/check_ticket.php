@@ -49,7 +49,7 @@ include '../database/db.php';
                             if ($result->num_rows > 0) {
                                 $ticket = $result->fetch_assoc();
                                 echo "<table class='table table-bordered'>";
-                                echo "<tr><th>Mã hóa đơn</th><td>" . $ticket['MaHoaDon'] . "</td></tr>";
+                                echo "<tr><th>Mã vé</th><td>" . $ticket['MaVeXe'] . "</td></tr>";
                                 echo "<tr><th>Tên tuyến</th><td>" . $ticket['TenTuyen'] . "</td></tr>";
                                 echo "<tr><th>Thời gian khởi hành</th><td>" . $ticket['ThoiGianKhoiHanh'] . "</td></tr>";
                                 echo "<tr><th>Thời gian kết thúc</th><td>" . $ticket['ThoiGianKetThuc'] . "</td></tr>";

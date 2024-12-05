@@ -25,6 +25,20 @@
        die("Không tìm thấy chuyến xe"); // Lỗi nếu không tìm thấy kết quả
    }
    $stmt->close();
+
+   // Truy vấn để lấy GiaTien từ bảng chuyenxe
+   $query = "SELECT GiaTien FROM chuyenxe WHERE MaChuyenXe = ?";
+   $stmt = $conn->prepare($query);
+   $stmt->bind_param('i', $MaChuyenXe);
+   $stmt->execute();
+   $result = $stmt->get_result();
+
+   if ($row = $result->fetch_assoc()) {
+         $GiaTien = $row['GiaTien']; // Lấy giá vé từ bảng chuyenxe
+   } else {
+         die("Không tìm thấy chuyến xe hoặc giá vé");
+   }
+   $stmt->close();
    
    // Cấu hình số tầng và số ghế dựa vào LoaiXe
    if ($LoaiXe == 1) {
@@ -159,10 +173,6 @@
                </div>
             </form>
 
-            <div class="price-tag">
-               <span class="futapay-label">FUTAPAY</span>
-               <span style="margin-left: auto">0đ</span>
-            </div>
             <div class="button-container">
                <button class="btn btn-cancel rounded-pill">Hủy</button>
                <button id="paymentBtn" class="btn btn-pay rounded-pill">Thanh toán</button>
@@ -205,7 +215,7 @@
       </div>
       <?php @include '../includes/footer.php'; ?>
       <script>
-         const PRICE_PER_SEAT = 180000; // Giá mỗi ghế
+         const PRICE_PER_SEAT = <?php echo $GiaTien; ?>;; // Giá mỗi ghế
          const soldSeats = <?php echo json_encode($soldSeats); ?>; // Danh sách ghế đã bán từ PHP
          const CURRENT_TRIP_ID = <?php echo $MaChuyenXe; ?>;
          const TRIP_ROUTE = "<?php echo htmlspecialchars(trimRoute($TenTuyen)); ?>";
