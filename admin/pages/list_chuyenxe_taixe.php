@@ -2,6 +2,14 @@
 session_start();
 include '../../database/db.php';
 
+// Kiểm tra nếu MaNV có trong session
+if (!isset($_SESSION['MaNV'])) {
+    header('Location: login.php'); // Chuyển hướng về trang đăng nhập
+    exit();
+}
+
+$MaNV = $_SESSION['MaNV']; // Lấy MaNV từ session
+
 // Phan trang 1 / 1
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 if (!filter_var($page, FILTER_VALIDATE_INT)) {
@@ -9,8 +17,11 @@ if (!filter_var($page, FILTER_VALIDATE_INT)) {
 }
 $limit = 8; // Số sản phẩm mỗi trang
 $offset = ($page - 1) * $limit;
-$sql_count = "SELECT COUNT(*) AS total FROM chuyenxe";
+
+// Lấy tổng số chuyến xe của tài xế từ cơ sở dữ liệu
+$sql_count = "SELECT COUNT(*) AS total FROM chuyenxe WHERE TaiXe = ?";
 $stmt_count = $conn->prepare($sql_count);
+$stmt_count->bind_param("i", $MaNV); // Truyền MaNV vào
 $stmt_count->execute();
 $result_count = $stmt_count->get_result();
 $row_count = $result_count->fetch_assoc();
@@ -18,7 +29,7 @@ $totalRows = $row_count['total'];  // Lấy tổng số dòng
 $totalPages = ceil($totalRows / $limit);
 // Phan trang 1 / 1
 
-// Lấy danh sách tuyến xe từ cơ sở dữ liệu, kết hợp với bảng benxe
+// Lấy danh sách chuyến xe của tài xế từ cơ sở dữ liệu, kết hợp với bảng benxe
 $stmt = $conn->prepare("
     SELECT c.MaChuyenXe, t.TenTuyenXe, c.ThoiGianKhoiHanh, c.ThoiGianKetThuc, c.GiaTien, c.SoChoTrong, 
         x.BienSoXe, nv.TenNV, nv.SDT, l.SucChua, c.enableflag, t.MaTuyenXe
@@ -27,13 +38,11 @@ $stmt = $conn->prepare("
     LEFT JOIN nhanvien nv ON c.TaiXe = nv.MaNV
     LEFT JOIN xe x ON c.Xe = x.MaXe
     LEFT JOIN loaixe l ON x.LoaiXe = l.MaLoaiXe
+    WHERE c.TaiXe = ?  -- Lọc theo TaiXe
     ORDER BY c.MaChuyenXe DESC
     LIMIT ? OFFSET ?
-
 "); 
-// Phan trang 2 / 2 CHÚ Ý Thêm LIMIT và OFFSET vào truy vấn
-$stmt->bind_param("ii", $limit, $offset); 
-// Phan trang 2 / 2
+$stmt->bind_param("iii", $MaNV, $limit, $offset); // Truyền MaNV, limit, offset
 $stmt->execute();
 $result = $stmt->get_result();
 $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết hợp
@@ -70,17 +79,6 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="../assets/vendor/js/helpers.js"></script>
     <script src="../assets/js/config.js"></script>
-    <style>
-        .badge.bg-success {
-            background-color: #28a745; /* Màu xanh lá cây */
-            color: white;
-        }
-
-        .badge.bg-danger {
-            background-color: #dc3545; /* Màu đỏ */
-            color: white;
-        }
-    </style>
 </head>
 
 <body>
@@ -92,7 +90,6 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                 <?php include 'navbar.php'; ?>
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
-                    <a href="./lichtrinh_add1.php" class="btn btn-success mb-3">Thêm chuyến xe</a>
                         <div class="card">
                             <h5 class="card-header">Danh sách chuyến xe</h5>
                             <div class="card-body">
@@ -142,109 +139,40 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                                                             data-bs-toggle="dropdown">
                                                             <i class="ri-more-2-line"></i>
                                                         </button>
-                                                        <div class="dropdown-menu">
-                                                            <a class="dropdown-item"
-                                                                href="./lichtrinh_update1.php?id=<?php echo $chuyenxe['MaChuyenXe']; ?>">
-                                                                <i class="ri-pencil-line me-1"></i> Chỉnh sửa</a>
-                                                            <a class="dropdown-item" href="#" onclick="confirmDelete('chuyenxe','<?php echo $chuyenxe['MaChuyenXe']; ?>', 1)">
-                                                                <i class="ri-delete-bin-6-line me-1"></i> Xóa
-                                                            </a>
-                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
-                                    
-                                    
-                                    </div>
+                                 </div>
                             </div>
                         </div>
-                        <!-- Phan trang 3 / 3 -->
-                        <?php
-                                    // Hiển thị phân trang
-                                    echo '<nav aria-label="Page navigation" class="p-5 fs-3">';
-                                    echo '<ul class="pagination justify-content-center green-pagination">';
-
-                                    // Nút Previous
-                                    if ($page > 1) {
-                                        echo '<li class="page-item"><a class="page-link" href="?page=1">&laquo;</a></li>';
-                                    } else {
-                                        echo '<li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>';
-                                    }
-
-                                    // Các nút số trang
-                                    for ($i = 1; $i <= $totalPages; $i++) {
-                                        if ($i == $page) {
-                                            echo '<li class="page-item active"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
-                                        } else {
-                                            echo '<li class="page-item"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
-                                        }
-                                    }
-
-                                    // Nút Next
-                                    if ($page < $totalPages) {
-                                        echo '<li class="page-item"><a class="page-link" href="?page=' . ($totalPages) . '">&raquo;</a></li>';
-                                    } else {
-                                        echo '<li class="page-item disabled"><a class="page-link" href="#">&raquo;</a></li>';
-                                    }
-
-                                    echo '</ul>';
-                                    echo '</nav>';
-                                    ?>
-                                    <!-- Phan trang 3 / 3 -->
-                        
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item <?php echo ($page == 1) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="?page=1" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>"><a class="page-link"
+                                        href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                <?php endfor; ?>
+                                <li class="page-item <?php echo ($page == $totalPages) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="?page=<?php echo $totalPages; ?>" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
-                    <!-- Content wrapper -->
                 </div>
-
+                <?php include 'footer.php'; ?>
             </div>
             <div class="layout-overlay layout-menu-toggle"></div>
         </div>
         <?php include 'other.php'; ?>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </div>
 </body>
-<script>
-        function confirmDelete(table, id, isEnable) {
-            Swal.fire({
-                title: 'Bạn có chắc chắn?',
-                text: "Bạn có chắc chắn muốn xoá chuyến xe này không?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Đồng ý',
-                cancelButtonText: 'Hủy'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Gọi hàm để cập nhật trạng thái
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "delete.php", true);
-                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-                    // Gửi dữ liệu đến server
-                    xhr.send(`type=${table}&id=${id}&enableflag=${isEnable}`);
-
-                    // Xử lý phản hồi từ server
-                    xhr.onload = function() {
-                        if (xhr.status === 200) {
-                            Swal.fire(
-                                'Thành công!',
-                                'Đã thay đổi trạng thái chuyến xe thành công.',
-                                'success'
-                            );
-                            $('.card-body').load(' .card-body>.table-responsive');
-                        } else {
-                            Swal.fire(
-                                'Lỗi!',
-                                'Đã có lỗi xảy ra. Vui lòng thử lại.',
-                                'error'
-                            );
-                        }
-                    };
-                }
-            });
-        }
-    </script>
 </html>

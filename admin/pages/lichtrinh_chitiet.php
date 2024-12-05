@@ -103,10 +103,7 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                 <?php include 'navbar.php'; ?>
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="" style="display: flex; justify-content:space-between">
-                        <a href="./lichtrinh_homnay.php" class="btn btn-success mb-3">Quay lại</a>
-                        <a href="./lichtrinh_pdf.php?id=<?php echo $id; ?>" class="btn btn-success mb-3" target="_blank">Xuất danh sách vé</a>
-                        </div>
+                    <a href="./lichtrinh_homnay.php" class="btn btn-success mb-3">Quay lại</a>
                         <div class="card">
                             <h5 class="card-header">Danh sách vé của chuyến <?php echo $id; ?></h5>
                             <div class="card-body">

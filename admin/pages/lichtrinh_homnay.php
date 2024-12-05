@@ -96,7 +96,6 @@ $chuyenxeList = $result->fetch_all(MYSQLI_ASSOC); // Trả về mảng kết h�
                 <?php include 'navbar.php'; ?>
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
-                    <a href="./lichtrinh_homnay.php" class="btn btn-success mb-3 disabled" disabled>Chuyến xe hôm nay</a>
                     <a href="./lichtrinh_manager.php" class="btn btn-success mb-3">Xem tất cả</a>
                         <div class="card">
                             <h5 class="card-header">Danh sách chuyến xe hôm nay</h5>
