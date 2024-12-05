@@ -225,7 +225,7 @@
                Chọn chuyến
                </button> -->
                <a href="choose_seat.php?MaChuyenXe=<?= $ticket['MaChuyenXe'] ?>" 
-                  class="book-button text-decoration-none" data-trip="outbound">Chọn ghế
+                  class="book-button text-decoration-none px-4 py-2 rounded-pill" data-trip="outbound">Chọn ghế
                </a>
             </div>
          </div>

@@ -34,7 +34,7 @@
 }
 
 .payment-option.selected {
-    border: 2px solid #00693e;
+    border: 2px solid #ff3344;
 }
 
 .payment-radio {
@@ -109,7 +109,7 @@
 
 .total-amount {
     font-size: 32px;
-    color: #f15a24;
+    color: #ff3344;
     text-align: center;
     margin: 20px 0;
 }

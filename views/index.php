@@ -93,7 +93,7 @@
                   <div class="row g-3 mt-3">
                      <!-- Adjusted to center the button using col-md-12 and a custom class -->
                      <div class="col-12 d-flex justify-content-center">
-                        <button type="submit" class="btn btn-primary rounded-pill w-25 w-sm-75 w-md-25">
+                        <button type="submit" class="btn btn-primary rounded-pill px-5">
                            Tìm chuyến xe
                         </button>
                      </div>
