@@ -82,6 +82,12 @@
                 <div data-i18n="Tables">Quản Lý Phản Hồi</div>
             </a>
         </li>
+        <li class="menu-item">
+            <a href="admin_contact.php" class="menu-link">
+                <i class="menu-icon tf-icons ri-table-alt-line"></i>
+                <div data-i18n="Tables">Quản Lý Liên Hệ</div>
+            </a>
+        </li>
         <!-- HÓA ĐƠN -->
         <li class="menu-header fw-medium mt-4"><span class="menu-header-text">HÓA ĐƠN</u></span></li>
         <li class="menu-item">
