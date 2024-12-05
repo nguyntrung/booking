@@ -35,14 +35,13 @@
                     <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
                 </li>
                 <?php if ($email): ?>
-                    <li class="nav-item ms-auto">
-                        <a class="nav-link fw-bold" href="#">
-                            Xin chào, <?= $email ?>
+                    <li class="nav-item ms-auto"style="display: flex" >
+                        <a class="nav-link fw-bold" href="profile.php">
+                            <!-- Xin chào, <?= $email ?> -->
+                            <img src="https://cdn-icons-png.flaticon.com/512/4792/4792929.png" alt="avata" style="width: 30px">
                         </a>
-                    </li>
-                    <li class="nav-item ms-auto">
                         <a href="logout.php" class="btn btn-sm btn-light rounded-pill">
-                            <i class="nav-link fas fa-sign-out-alt me-1"></i>
+                            <i class="nav-link fas fa-sign-out-alt me-1 text-warning"></i>
                             Đăng xuất
                         </a>
                     </li>
