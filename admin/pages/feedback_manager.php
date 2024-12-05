@@ -374,7 +374,9 @@ $negative_percentage = $total_count > 0 ? round(($negative_count / $total_count)
         </div>
         <?php include 'other.php'; ?>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </body>
 <script>
     function confirmDelete(table, id, isEnable) {

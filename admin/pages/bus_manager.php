@@ -11,7 +11,7 @@
    include '../../database/db.php';
    
    // Lấy danh sách xe từ cơ sở dữ liệu
-   $stmt = $conn->prepare("SELECT x.MaXe, x.BienSoXe, x.ViTriXe, x.LoaiXe, l.TenLoaiXe, b.TenBenXe
+   $stmt = $conn->prepare("SELECT x.MaXe, x.BienSoXe, x.ViTriXe, x.LoaiXe, x.enableflag, l.TenLoaiXe, b.TenBenXe
                             FROM xe x 
                             JOIN loaixe l ON x.LoaiXe = l.MaLoaiXe 
                             JOIN benxe b ON x.ViTriXe = b.MaBenXe
@@ -73,6 +73,7 @@
                                     <th>Loại xe</th>
                                     <th>Biển số xe</th>
                                     <th>Vị Trí Xe</th>
+                                    <th>Trạng thái</th>
                                     <th></th>
                                  </tr>
                               </thead>
@@ -88,6 +89,18 @@
                                     </td>
                                     <td>
                                        <?php echo htmlspecialchars($xe['TenBenXe']); ?>
+                                    </td>
+                                    <td>
+                                       <div class="d-flex justify-content-center">
+                                          <?php 
+                                             // Kiểm tra trạng thái enableflag và hiển thị màu sắc tương ứng
+                                             if ($xe['enableflag'] == 1) {
+                                                echo "<a class='badge bg-danger' href='#' onclick=\"confirmDelete('xe','{$xe['MaXe']}', 0)\"> Ẩn </a>";
+                                             } else {
+                                                echo "<a class='badge bg-success' href='#' onclick=\"confirmDelete('xe','{$xe['MaXe']}', 1)\"> Kích hoạt </a>";
+                                             }
+                                          ?>
+                                       </div>
                                     </td>
                                     <td>
                                        <div class="dropdown">
@@ -121,6 +134,7 @@
          <div class="layout-overlay layout-menu-toggle"></div>
       </div>
       <?php include 'other.php'; ?>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       <!-- Modal Xác Nhận Xóa -->
       <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
          <div class="modal-dialog">
@@ -140,19 +154,90 @@
          </div>
       </div>
       <script>
-         let maBaiHocToDelete; 
-         
-         function confirmDelete(maBaiHoc) {
-             maBaiHocToDelete = maBaiHoc; // Lưu mã câu hỏi vào biến toàn cục
-             const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-             deleteModal.show(); // Hiển thị modal
-         }
-         
-         // Xử lý khi nhấn nút xóa trong modal
-         document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-             window.location.href = 'delete.php?id=' + maBaiHocToDelete + '&table=baihoc&location=lessons_manage.php&idColumn=MaBaiHoc';
-         });
-      </script>
+    function confirmDelete(table, id, isEnable) {
+
+        Swal.fire({
+    title: 'Bạn có chắc chắn?',
+    text: "Bạn có chắc chắn muốn thay đổi trạng thái của đánh giá này không?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Đồng ý',
+    cancelButtonText: 'Hủy'
+}).then((result) => {
+    if (result.isConfirmed) {
+        // Gọi hàm để cập nhật trạng thái
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "delete.php", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        // Gửi dữ liệu đến server
+        xhr.send(`type=${table}&id=${id}&enableflag=${isEnable}`);
+
+        // Xử lý phản hồi từ server
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                Swal.fire(
+                    'Thành công!',
+                    'Trạng thái đã được thay đổi.',
+                    'success'
+                );
+                $('.card-body').load(' .card-body>.table-responsive');
+            } else {
+                Swal.fire(
+                    'Lỗi!',
+                    'Đã có lỗi xảy ra. Vui lòng thử lại.',
+                    'error'
+                );
+            }
+        };
+    }
+});
+
+}
+
+function callHK(SDT){
+    Swal.fire({
+    title: "Gọi cho hành khách?",
+    text: "Nói chuyện chuẩn mực, thái độ nghiêm túc,  đảm bảo tính uy tín của nhà xe.",
+    icon: 'info',
+    showCancelButton: true,
+    cancelButtonColor: '#d33',
+    confirmButtonColor: '#3085d6',
+    cancelButtonText: 'Hủy',
+    confirmButtonText: '<a href="tel:'+SDT+'" class="text-white">Gọi: '+SDT+'</a>'
+}).then((result) => {
+    if (result.isConfirmed) {
+        // Gọi hàm để cập nhật trạng thái
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "delete.php", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        // Gửi dữ liệu đến server
+        xhr.send(`type=${table}&id=${id}&enableflag=${isEnable}`);
+
+        // Xử lý phản hồi từ server
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                Swal.fire(
+                    'Thành công!',
+                    'Trạng thái đã được thay đổi.',
+                    'success'
+                );
+                $('.card-body').load(' .card-body>.table-responsive');
+            } else {
+                Swal.fire(
+                    'Lỗi!',
+                    'Đã có lỗi xảy ra. Vui lòng thử lại.',
+                    'error'
+                );
+            }
+        };
+    }
+});
+}
+</script>
    </body>
    </body>
 </html>
