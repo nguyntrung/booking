@@ -47,8 +47,8 @@
        $seatsPerRow = 3; // 3 dãy mỗi hàng
    } elseif ($LoaiXe == 2) {
        $floors = 1; // 1 tầng
-       $rowsPerFloor = 10; // 10 hàng
-       $seatsPerRow = 4; // 4 dãy mỗi hàng
+       $rowsPerFloor = 13; // 10 hàng
+       $seatsPerRow = 3; // 4 dãy mỗi hàng
    } else {
        die("Dữ liệu không hợp lệ");
    }   

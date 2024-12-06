@@ -54,7 +54,6 @@
 
 /* Seat Styles */
 .seat {
-    max-height: 520px;
     width: 100%;
     aspect-ratio: 1;
     border: 1px solid #e0e0e0;
@@ -70,6 +69,7 @@
 }
 
 .seat.available {
+    max-width: 50px;
     border-color: 2px solid #2196F3;
     color: #2196F3;
     cursor: pointer;
@@ -83,6 +83,7 @@
 }
 
 .seat.sold {
+    max-width: 50px;
     background: #9e9e9e;
     border-color: #9e9e9e;
     color: white;
