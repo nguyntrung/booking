@@ -185,7 +185,7 @@
          .then(response => response.json())
          .then(data => {
              if (data.success) {
-                 alert('Thanh toán thành công! Mã hóa đơn: ' + data.invoiceId);
+                 //alert('Thanh toán thành công! Mã hóa đơn: ' + data.invoiceId);
                  // Gửi email hóa đơn
                   fetch('send_invoice_email.php', {
                         method: 'POST',
