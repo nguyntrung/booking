@@ -1,11 +1,9 @@
 <?php
    include '../database/db.php';
 
+
    session_start(); 
-   if (!isset($_SESSION['userEmail'])) {
-        header("Location: ../views/login.php");
-        exit();
-    }
+   $email = isset($_SESSION['userEmail']) ? $_SESSION['userEmail'] : '';
 ?>
 <div class="promos" style="max-width: 800px; margin: 0 auto;">
     <!-- Promotions Section -->
