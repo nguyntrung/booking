@@ -51,11 +51,19 @@ $bookingsResult = $stmt->get_result();
                 <h2 class="my-4 text-center title">
                     <i class="fas fa-ticket-alt me-2"></i>Vé Của Tôi
                 </h2>
-                <?php if ($mess): ?>
-                    <div id="successMessage" class="alert <?php echo $kq==1?'alert-success':'alert-danger'; ?>">
+                <?php
+                if(isset($mess)){
+
+                ?>
+                    <div id="successMessage" class="alert <?php 
+                    if(isset($kq)){
+                       echo $kq==1?'alert-success':'alert-danger'; 
+                    }
+                     
+                     ?>">
                         <?php echo $mess; ?>
                     </div>
-                <?php endif; ?>
+                    <?php } ?>
 
                 <?php if ($bookingsResult->num_rows > 0): ?>
                     <div class="bookings-list">
